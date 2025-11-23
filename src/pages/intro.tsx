@@ -1,0 +1,56 @@
+import { useRef, useState } from "react";
+import { Client, Room } from "colyseus.js";
+import IntroContainer from "../components/intro-container";
+import TitleHeader from "../components/title-header";
+import Input from "../components/input";
+import Button from "../components/button";
+import ErrorContainer from "../components/error-container";
+import { useNavigate } from "react-router-dom";
+
+function Intro({ setRoom }: { setRoom: (room: Room) => void }) {
+  const navigate = useNavigate();
+  const roomRef = useRef<Room | null>(null);
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "error" | "success"
+  >("idle");
+  const [name, setName] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handlePlay = async () => {
+    setStatus("loading");
+    try {
+      const client = new Client("ws://localhost:2567");
+      const room = await client.joinOrCreate("game_room", { name });
+
+      roomRef.current = room;
+      setStatus("success");
+      setRoom(room);
+      navigate("/game");
+    } catch (error) {
+      setErrorMessage("Nie udało się dołaczyć do gry. Spróbuj ponownie.");
+      console.error("Failed to join the game room:", error); // debug - remove line later before production
+      setStatus("error");
+    }
+  };
+
+  return (
+    <IntroContainer>
+      <TitleHeader title="Capybara Escape" />
+      <Input
+        value={name}
+        placeholder="Elek..."
+        setValue={(val) => setName(val.toUpperCase())}
+        disabled={status === "loading"}
+      />
+      <Button
+        onClick={handlePlay}
+        disabled={status === "loading" || name.trim() === ""}
+      >
+        {status === "loading" ? "Ładowanie..." : "Graj"}
+      </Button>
+      {status === "error" && <ErrorContainer errorMessage={errorMessage} />}
+    </IntroContainer>
+  );
+}
+
+export default Intro;

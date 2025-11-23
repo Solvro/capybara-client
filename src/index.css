@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "ArcadeClassic";
+  src: local("ArcadeClassic"), url(./assets/fonts/arcade.ttf) format("truetype");
+}
+
+.arcade-font {
+  font-family: "ArcadeClassic";
+}
