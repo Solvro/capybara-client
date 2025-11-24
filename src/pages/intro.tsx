@@ -1,13 +1,15 @@
+import { Client } from "colyseus.js";
+import type { Room } from "colyseus.js";
 import { useRef, useState } from "react";
-import { Client, Room } from "colyseus.js";
-import IntroContainer from "../components/intro-container";
-import TitleHeader from "../components/title-header";
-import Input from "../components/input";
-import Button from "../components/button";
-import ErrorContainer from "../components/error-container";
 import { useNavigate } from "react-router-dom";
 
-function Intro({ setRoom }: { setRoom: (room: Room) => void }) {
+import { Button } from "../components/button";
+import { ErrorContainer } from "../components/error-container";
+import { Input } from "../components/input";
+import { IntroContainer } from "../components/intro-container";
+import { TitleHeader } from "../components/title-header";
+
+export function Intro({ setRoom }: { setRoom: (room: Room) => void }) {
   const navigate = useNavigate();
   const roomRef = useRef<Room | null>(null);
   const [status, setStatus] = useState<
@@ -25,7 +27,7 @@ function Intro({ setRoom }: { setRoom: (room: Room) => void }) {
       roomRef.current = room;
       setStatus("success");
       setRoom(room);
-      navigate("/game");
+      await navigate("/game");
     } catch (error) {
       setErrorMessage("Nie udało się dołaczyć do gry. Spróbuj ponownie.");
       console.error("Failed to join the game room:", error); // debug - remove line later before production
@@ -39,7 +41,9 @@ function Intro({ setRoom }: { setRoom: (room: Room) => void }) {
       <Input
         value={name}
         placeholder="Elek..."
-        setValue={(val) => setName(val.toUpperCase())}
+        setValue={(value) => {
+          setName(value.toUpperCase());
+        }}
         disabled={status === "loading"}
       />
       <Button
@@ -52,5 +56,3 @@ function Intro({ setRoom }: { setRoom: (room: Room) => void }) {
     </IntroContainer>
   );
 }
-
-export default Intro;

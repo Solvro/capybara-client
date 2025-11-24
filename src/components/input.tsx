@@ -7,7 +7,7 @@ interface InputProps {
   bgColor?: string;
 }
 
-function Input({
+export function Input({
   value,
   setValue,
   disabled,
@@ -19,14 +19,14 @@ function Input({
     <input
       type="text"
       value={value}
-      onChange={(e) => setValue(e.target.value)}
-      className={`px-4 py-2 my-4 bg-${bgColor} text-${textColor}-950 rounded-2xl text-center w-2/3 text-sm ${
-        disabled && "opacity-50 cursor-not-allowed"
+      onChange={(event) => {
+        setValue(event.target.value);
+      }}
+      className={`my-4 px-4 py-2 bg-${bgColor} text-${textColor}-950 w-2/3 rounded-2xl text-center text-sm ${
+        disabled ? "cursor-not-allowed opacity-50" : ""
       }`}
       placeholder={placeholder}
       disabled={disabled}
     ></input>
   );
 }
-
-export default Input;

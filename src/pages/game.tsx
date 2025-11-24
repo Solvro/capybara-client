@@ -1,13 +1,19 @@
-import type { Player } from "../types/player";
-import Tilemap from "../components/tilemap";
-import { Room } from "colyseus.js";
+import type { Room } from "colyseus.js";
 import { useEffect, useState } from "react";
 
-const CELL_SIZE = 64;
+import { Tilemap } from "../components/tilemap";
+import { CELL_SIZE } from "../constants/global";
+import type {
+  MessageMapInfo,
+  MessageOnAddPlayer,
+  MessageOnRemovePlayer,
+  MessagePositionUpdate,
+} from "../types/messages";
+import type { Player } from "../types/player";
 
-function Game({ room }: { room: Room }) {
+export function Game({ room }: { room: Room }) {
   const [players, setPlayers] = useState<Player[]>([]);
-  const [table, setTable] = useState<number[][]>(new Array(0));
+  const [table, setTable] = useState<number[][]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
@@ -19,71 +25,75 @@ function Game({ room }: { room: Room }) {
   }, []);
 
   useEffect(() => {
-    room.onMessage("mapInfo", (message) => {
+    room.onMessage("mapInfo", (message: MessageMapInfo) => {
       setTable(message.grid);
       setWidth(message.width);
       setHeight(message.height);
       setPlayers(message.players);
       setIsLoading(false);
-      console.log("Map info received:");
     });
 
-    room.onMessage("positionUpdate", (message) => {
-      setPlayers((prevPlayers) =>
-        prevPlayers.map((player) =>
+    room.onMessage("positionUpdate", (message: MessagePositionUpdate) => {
+      setPlayers((previousPlayers) =>
+        previousPlayers.map((player) =>
           player.name === message.playerName
             ? { ...player, x: message.position.x, y: message.position.y }
-            : player
-        )
+            : player,
+        ),
       );
     });
 
-    room.onMessage("onAddPlayer", (message) => {
-      if (players.find((p) => p.name === message.playerName)) {
-        return;
-      }
-      setPlayers((prevPlayers) => [
-        ...prevPlayers,
-        {
-          name: message.playerName,
-          x: message.position.x,
-          y: message.position.y,
-          index: message.index,
-          sessionId: message.sessionId,
-        },
-      ]);
-      console.log("Player added:", message.playerName);
+    room.onMessage("onAddPlayer", (message: MessageOnAddPlayer) => {
+      setPlayers((previousPlayers: Player[]) => {
+        if (previousPlayers.some((p) => p.name === message.playerName)) {
+          return previousPlayers;
+        }
+
+        return [
+          ...previousPlayers,
+          {
+            name: message.playerName,
+            x: message.position.x,
+            y: message.position.y,
+            index: message.index,
+            sessionId: message.sessionId,
+          },
+        ];
+      });
     });
 
-    room.onMessage("onRemovePlayer", (message) => {
-      setPlayers((prevPlayers) =>
-        prevPlayers.filter((player) => player.name !== message.playerName)
+    room.onMessage("onRemovePlayer", (message: MessageOnRemovePlayer) => {
+      setPlayers((previousPlayers) =>
+        previousPlayers.filter((player) => player.name !== message.playerName),
       );
-      console.log("Player removed:", message.playerName);
     });
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      let x: number = 0;
-      let y: number = 0;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase();
+      let x = 0;
+      let y = 0;
 
       switch (key) {
         case "w":
-        case "arrowup":
+        case "arrowup": {
           y = -1;
           break;
+        }
         case "a":
-        case "arrowleft":
+        case "arrowleft": {
           x = -1;
           break;
+        }
         case "s":
-        case "arrowdown":
+        case "arrowdown": {
           y = 1;
           break;
+        }
         case "d":
-        case "arrowright":
+        case "arrowright": {
           x = 1;
           break;
+        }
       }
 
       room.send("move", { x, y });
@@ -96,20 +106,16 @@ function Game({ room }: { room: Room }) {
     };
   }, [room]);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  } else {
-    return (
-      <Tilemap
-        width={width}
-        height={height}
-        cellSize={CELL_SIZE}
-        initialTable={table}
-        players={players}
-        clientId={sessionId}
-      />
-    );
-  }
+  return isLoading ? (
+    <div>Loading...</div>
+  ) : (
+    <Tilemap
+      width={width}
+      height={height}
+      cellSize={CELL_SIZE}
+      initialTable={table}
+      players={players}
+      clientId={sessionId}
+    />
+  );
 }
-
-export default Game;

@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-interface Frames {
-  front: string[];
-  back: string[];
-  left: string[];
-  right: string[];
-}
+import type { Frames } from "../types/frames";
 
 interface EntityProps {
   allFrames: Frames;
@@ -15,27 +10,27 @@ interface EntityProps {
   name?: string;
 }
 
-export default function Entity({
+export function Entity({
   allFrames,
   position,
   cellSize,
   type,
   name,
 }: EntityProps) {
-  const [frameIdx, setFrameIdx] = useState(0);
+  const [frameIndex, setFrameIndex] = useState(0);
   const [frames, setFrames] = useState<string[]>(allFrames.front);
-  const prevPos = useRef({ x: position.x, y: position.y });
+  const previousPos = useRef({ x: position.x, y: position.y });
   const animRef = useRef<number | null>(null);
 
   useEffect(() => {
     const direction: { x: number; y: number } = {
-      x: prevPos.current.x - position.x,
-      y: prevPos.current.y - position.y,
+      x: previousPos.current.x - position.x,
+      y: previousPos.current.y - position.y,
     };
     const moved = direction.x !== 0 || direction.y !== 0;
 
     if (moved) {
-      if (animRef.current) {
+      if (animRef.current != null && animRef.current) {
         clearInterval(animRef.current);
         animRef.current = null;
       }
@@ -52,32 +47,32 @@ export default function Entity({
 
       let ticks = 0;
       const maxTicks = frames.length;
-      setFrameIdx(1);
+      setFrameIndex(1);
 
       animRef.current = window.setInterval(() => {
-        setFrameIdx((i) => (i + 1) % frames.length);
+        setFrameIndex((index) => (index + 1) % frames.length);
         ticks++;
         if (ticks >= maxTicks) {
-          if (animRef.current) {
+          if (animRef.current != null && animRef.current) {
             clearInterval(animRef.current);
             animRef.current = null;
           }
-          setFrameIdx(0);
+          setFrameIndex(0);
         }
       }, 90);
     }
 
-    prevPos.current = { x: position.x, y: position.y };
+    previousPos.current = { x: position.x, y: position.y };
 
     return () => {
-      if (animRef.current) {
+      if (animRef.current != null && animRef.current) {
         clearInterval(animRef.current);
         animRef.current = null;
       }
     };
   }, [position.x, position.y]);
 
-  const src = frames[Math.max(0, Math.min(frameIdx, frames.length - 1))];
+  const source = frames[Math.max(0, Math.min(frameIndex, frames.length - 1))];
 
   return (
     <div style={{ position: "relative", width: cellSize, height: cellSize }}>
@@ -97,7 +92,7 @@ export default function Entity({
       </div>
 
       <img
-        src={src}
+        src={source}
         alt={type ?? name ?? "entity"}
         draggable={false}
         style={{
@@ -105,7 +100,7 @@ export default function Entity({
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%)",
-          width: `${cellSize * 0.9}px`,
+          width: cellSize * 0.9,
         }}
       />
     </div>

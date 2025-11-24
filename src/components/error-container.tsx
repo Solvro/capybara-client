@@ -1,5 +1,3 @@
-function ErrorContainer({ errorMessage }: { errorMessage: string }) {
-  return <div className="text-red-400 text-xs my-4">{errorMessage}</div>;
+export function ErrorContainer({ errorMessage }: { errorMessage: string }) {
+  return <div className="my-4 text-xs text-red-400">{errorMessage}</div>;
 }
-
-export default ErrorContainer;

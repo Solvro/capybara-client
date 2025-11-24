@@ -1,5 +1,3 @@
-function TitleHeader({ title }: { title: string }) {
-  return <h1 className="text-4xl font-bold mb-4">{title}</h1>;
+export function TitleHeader({ title }: { title: string }) {
+  return <h1 className="mb-4 text-4xl font-bold">{title}</h1>;
 }
-
-export default TitleHeader;

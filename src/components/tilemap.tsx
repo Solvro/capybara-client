@@ -1,7 +1,7 @@
-import Entity from "./entity";
 import { TILES } from "../constants/blocks";
 import { PLAYER_SPRITES } from "../constants/player-sprites";
 import type { Player } from "../types/player";
+import { Entity } from "./entity";
 
 interface TilemapProps {
   width: number;
@@ -12,7 +12,7 @@ interface TilemapProps {
   clientId?: string;
 }
 
-function Tilemap({
+export function Tilemap({
   width,
   height,
   cellSize,
@@ -20,7 +20,7 @@ function Tilemap({
   players,
   clientId,
 }: TilemapProps) {
-  console.log("Tilemap rendering with players:", clientId);
+  console.warn("Tilemap rendering with players:", clientId);
   return (
     <div
       className="grid"
@@ -29,8 +29,8 @@ function Tilemap({
         width: width * cellSize,
         border: "2px solid #444",
         height: height * cellSize,
-        gridTemplateColumns: `repeat(${width}, ${cellSize}px)`,
-        gridTemplateRows: `repeat(${height}, ${cellSize}px)`,
+        gridTemplateColumns: `repeat(${width.toString()}, ${cellSize.toString()}px)`,
+        gridTemplateRows: `repeat(${height.toString()}, ${cellSize.toString()}px)`,
       }}
     >
       {initialTable.flat().map((tile, index) => {
@@ -58,7 +58,6 @@ function Tilemap({
         {players.map((player) => {
           const left = player.x * cellSize;
           const top = player.y * cellSize;
-          console.log("Rendering player:", player);
           const frames = PLAYER_SPRITES[player.index];
 
           return (
@@ -68,7 +67,7 @@ function Tilemap({
                 position: "absolute",
                 width: cellSize,
                 height: cellSize,
-                transform: `translate(${left}px, ${top}px)`,
+                transform: `translate(${left.toString()}px, ${top.toString()}px)`,
                 transition: "transform 160ms linear",
                 willChange: "transform",
                 pointerEvents: "auto",
@@ -92,5 +91,3 @@ function Tilemap({
     </div>
   );
 }
-
-export default Tilemap;

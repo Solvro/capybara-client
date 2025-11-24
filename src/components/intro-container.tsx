@@ -1,11 +1,7 @@
-import React from "react";
-
-function IntroContainer({ children }: { children: React.ReactNode }) {
+export function IntroContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-center flex flex-col items-center justify-center w-120">
+    <div className="flex w-120 flex-col items-center justify-center text-center">
       {children}
     </div>
   );
 }
-
-export default IntroContainer;

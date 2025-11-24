@@ -6,7 +6,7 @@ interface ButtonProps {
   children: React.ReactNode;
 }
 
-function Button({
+export function Button({
   onClick,
   disabled,
   textColor = "white",
@@ -15,8 +15,8 @@ function Button({
 }: ButtonProps) {
   return (
     <button
-      className={`px-6 py-2 w-2/3 bg-${bgColor}-500 text-${textColor} rounded-2xl hover:bg-${bgColor}-600 text-sm ${
-        disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+      className={`w-2/3 px-6 py-2 bg-${bgColor}-500 text-${textColor} rounded-2xl hover:bg-${bgColor}-600 text-sm ${
+        disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
       }`}
       onClick={onClick}
       disabled={disabled}
@@ -25,5 +25,3 @@ function Button({
     </button>
   );
 }
-
-export default Button;
