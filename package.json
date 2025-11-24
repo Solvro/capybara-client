@@ -1,18 +1,22 @@
 {
   "name": "client",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "prepare": "husky || true",
-    "format:check": "prettier --check .",
+    "dev": "vite",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "prepare": "husky || true",
+    "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
+  "lint-staged": {
+    "*": "prettier -w --ignore-unknown"
+  },
+  "prettier": "@solvro/config/prettier",
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
     "colyseus.js": "^0.16.22",
@@ -39,9 +43,5 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4"
-  },
-  "prettier": "@solvro/config/prettier",
-  "lint-staged": {
-    "*": "prettier -w --ignore-unknown"
   }
 }

@@ -2,7 +2,9 @@
 
 @font-face {
   font-family: "ArcadeClassic";
-  src: local("ArcadeClassic"), url(./assets/fonts/arcade.ttf) format("truetype");
+  src:
+    local("ArcadeClassic"),
+    url(./assets/fonts/arcade.ttf) format("truetype");
 }
 
 .arcade-font {
