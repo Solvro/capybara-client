@@ -10,6 +10,7 @@ import { IntroContainer } from "../components/intro-container";
 import { TitleHeader } from "../components/title-header";
 
 export function Intro({ setRoom }: { setRoom: (room: Room) => void }) {
+  // Hello world
   const navigate = useNavigate();
   const roomRef = useRef<Room | null>(null);
   const [status, setStatus] = useState<
