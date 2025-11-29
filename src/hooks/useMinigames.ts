@@ -11,7 +11,7 @@ export function useMinigames() {
     setStatus("running");
   };
 
-  const finishMinigame = () => {
+  const completeMinigame = () => {
     setStatus("completed");
   };
 
@@ -27,7 +27,7 @@ export function useMinigames() {
     isClosed: status === "closed",
     currentMinigame,
     openMinigame,
-    finishMinigame,
+    completeMinigame,
     closeMinigame,
     resetMinigame,
   };

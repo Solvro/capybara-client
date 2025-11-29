@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 
 import { Minigame } from "../components/minigame";
+import { BinMinigame } from "../components/minigames/bin/bin-minigame";
 import { useMinigames } from "../hooks/useMinigames";
 
 export function Playground() {
@@ -11,7 +12,7 @@ export function Playground() {
     isClosed,
     openMinigame,
     closeMinigame,
-    finishMinigame,
+    completeMinigame,
     resetMinigame,
   } = useMinigames();
 
@@ -31,6 +32,13 @@ export function Playground() {
       <h2>It's place where you can test dev features</h2>
 
       <div className="mt-12 flex flex-col gap-4">
+        <button
+          onClick={() =>
+            openMinigame(<BinMinigame completeMinigame={completeMinigame} />)
+          }
+        >
+          Open bin minigame
+        </button>
         <button onClick={() => openMinigame(<>Minigame 1</>)}>
           Open minigame 1
         </button>
@@ -46,7 +54,6 @@ export function Playground() {
         isOpen={isOpen}
         minigame={currentMinigame}
         closeMinigame={closeMinigame}
-        finishMinigame={finishMinigame}
       />
     </div>
   );

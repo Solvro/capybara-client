@@ -1,0 +1,47 @@
+import { useEffect, useRef, useState } from "react";
+
+import { BitTile } from "./bit-tile";
+
+interface BitMinigame {
+  completeMinigame: () => void;
+}
+
+export function BinMinigame({ completeMinigame }: BitMinigame) {
+  const [bits, setBits] = useState(Array.from({ length: 8 }, () => 0));
+
+  const switchBit = (index: number) => {
+    setBits((prev) => {
+      const copy = [...prev];
+      copy[index] = copy[index] === 0 ? 1 : 0;
+      return copy;
+    });
+  };
+
+  const correctValue = useRef(Math.floor(Math.random() * 256));
+
+  const correctBits = correctValue.current
+    .toString(2)
+    .padStart(8, "0")
+    .split("")
+    .map(Number);
+
+  useEffect(() => {
+    const isSame = bits.every((bit, index) => bit === correctBits[index]);
+
+    if (isSame) {
+      completeMinigame();
+    }
+  }, [bits]);
+
+  return (
+    <div className="flex flex-col items-center gap-8">
+      <h2 className="text-2xl">Switch the bits to represent the given value</h2>
+      <div className="flex gap-4">
+        {bits.map((bit, index) => (
+          <BitTile bit={bit} switchBit={() => switchBit(index)} />
+        ))}
+      </div>
+      <h3 className="text-xl">Value to guess: {correctValue.current}</h3>
+    </div>
+  );
+}
