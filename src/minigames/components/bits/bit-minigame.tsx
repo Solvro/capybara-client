@@ -1,12 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
+import type { MinigameComponentProps } from "../../types/minigame-components-props";
 import { BitTile } from "./bit-tile";
 
-interface BitMinigame {
-  completeMinigame: () => void;
-}
-
-export function BinMinigame({ completeMinigame }: BitMinigame) {
+export function BinMinigame({ completeMinigame }: MinigameComponentProps) {
   const [bits, setBits] = useState(Array.from({ length: 8 }, () => 0));
 
   const switchBit = (index: number) => {
