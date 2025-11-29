@@ -1,60 +1,80 @@
-import { useEffect } from "react";
+import { useMemo, useState } from "react";
 
-import { Minigame } from "../components/minigame";
-import { BinMinigame } from "../components/minigames/bin/bin-minigame";
-import { useMinigames } from "../hooks/useMinigames";
+import { BinMinigame } from "../minigames/components/bits/bit-minigame";
+import { MinigameContainer } from "../minigames/components/minigame-container";
+import type { Minigame } from "../minigames/types/minigame";
 
 export function Playground() {
-  let {
-    currentMinigame,
-    isOpen,
-    isCompleted,
-    isClosed,
-    openMinigame,
-    closeMinigame,
-    completeMinigame,
-    resetMinigame,
-  } = useMinigames();
+  const [currentMinigame, setCurrentMinigame] = useState<Minigame | null>(null);
+  const [bitCount1, setBitCount1] = useState<number>(0);
+  const [bitCount2, setBitCount2] = useState<number>(0);
 
-  useEffect(() => {
-    if (isCompleted) {
-      resetMinigame();
-      alert("completed");
-    } else if (isClosed) {
-      resetMinigame();
-      alert("closed");
-    }
-  }, [isCompleted, isClosed]);
+  const minigames: Minigame[] = useMemo(
+    () => [
+      {
+        name: "bit-1",
+        content: (
+          <BinMinigame
+            completeMinigame={() => {
+              setCurrentMinigame(null);
+              setBitCount1((prev) => prev + 1);
+              alert("Bit 1 completed");
+            }}
+          />
+        ),
+      },
+      {
+        name: "bit-2",
+        content: (
+          <BinMinigame
+            completeMinigame={() => {
+              setCurrentMinigame(null);
+              setBitCount2((prev) => prev + 1);
+              alert("Bit 2 completed");
+            }}
+          />
+        ),
+      },
+    ],
+    [setCurrentMinigame],
+  );
 
   return (
     <div className="flex flex-col items-center">
       <h1>Welcome in playground</h1>
       <h2>It's place where you can test dev features</h2>
 
+      <p className="mt-12">Count bit 1: {bitCount1}</p>
+      <p>Count bit 2: {bitCount2}</p>
+
       <div className="mt-12 flex flex-col gap-4">
         <button
-          onClick={() =>
-            openMinigame(<BinMinigame completeMinigame={completeMinigame} />)
-          }
+          onClick={() => {
+            setCurrentMinigame(
+              minigames.find((m) => m.name == "bit-1") ?? null,
+            );
+          }}
         >
-          Open bin minigame
+          Open bin minigame 1
         </button>
-        <button onClick={() => openMinigame(<>Minigame 1</>)}>
-          Open minigame 1
-        </button>
-        <button onClick={() => openMinigame(<>Minigame 2</>)}>
-          Open minigame 2
-        </button>
-        <button onClick={() => openMinigame(<>Minigame 3</>)}>
-          Open minigame 3
+
+        <button
+          onClick={() => {
+            setCurrentMinigame(
+              minigames.find((m) => m.name == "bit-2") ?? null,
+            );
+          }}
+        >
+          Open bin minigame 2
         </button>
       </div>
-
-      <Minigame
-        isOpen={isOpen}
-        minigame={currentMinigame}
-        closeMinigame={closeMinigame}
-      />
+      {currentMinigame && (
+        <MinigameContainer
+          isOpen={currentMinigame !== null}
+          onClose={() => setCurrentMinigame(null)}
+          minigame={currentMinigame}
+        />
+      )}
     </div>
   );
 }
