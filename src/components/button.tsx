@@ -1,6 +1,6 @@
 interface ButtonProps {
   onClick: () => void;
-  disabled?: boolean;
+  disabled: boolean;
   textColor?: string;
   bgColor?: string;
   children: React.ReactNode;
@@ -8,7 +8,7 @@ interface ButtonProps {
 
 export function Button({
   onClick,
-  disabled = false,
+  disabled,
   textColor = "white",
   bgColor = "green",
   children,
