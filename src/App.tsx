@@ -9,6 +9,7 @@ import {
 
 import { Game } from "./pages/game";
 import { Intro } from "./pages/intro";
+import { Playground } from "./pages/playground";
 
 export function App() {
   const [room, setRoom] = useState<Room | null>(null);
@@ -24,6 +25,7 @@ export function App() {
               room == null ? <Navigate to="/" replace /> : <Game room={room} />
             }
           />
+          <Route path="/playground" element={<Playground />} />
         </Routes>
       </Router>
     </div>

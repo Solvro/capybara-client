@@ -52,6 +52,8 @@ export function Intro({ setRoom }: { setRoom: (room: Room) => void }) {
       >
         {status === "loading" ? "Ładowanie..." : "Graj"}
       </Button>
+      {/* DEV BUTTON - MUST BE DELETED FOR PRODUCTION */}
+      <Button onClick={() => navigate("/playground")}>Playground</Button>
       {status === "error" && <ErrorContainer errorMessage={errorMessage} />}
     </IntroContainer>
   );
