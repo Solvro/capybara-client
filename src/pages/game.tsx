@@ -53,7 +53,7 @@ export function Game() {
   }
 
   return (
-    <div className="flex h-[600px] w-[800px] items-center justify-center">
+    <div className="flex h-[560px] w-[800px] items-center justify-center overflow-hidden rounded-2xl bg-amber-200">
       <PhaserGame room={room} />
     </div>
   );

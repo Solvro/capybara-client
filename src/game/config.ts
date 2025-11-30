@@ -6,8 +6,10 @@ import { Preloader } from "./scenes/preloader";
 
 export const phaserConfig: Phaser.Types.Core.GameConfig = {
   type: AUTO,
-  width: 800,
-  height: 600,
+  width: 640,
+  height: 448,
+  pixelArt: true,
+  render: { antialias: false },
   parent: "game-container",
   backgroundColor: "#028af8",
   scene: [Boot, Preloader, MainScene],
