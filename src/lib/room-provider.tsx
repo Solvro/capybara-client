@@ -11,6 +11,9 @@ interface CachedReconnection {
   token: string;
 }
 
+// Global flag to prevent double reconnection in Strict Mode
+let isReconnecting = false;
+
 export function RoomProvider({ children }: { children: React.ReactNode }) {
   const [room, setRoom] = useState<Room | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -39,17 +42,35 @@ export function RoomProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const reconnect = async () => {
+      if (isReconnecting) {
+        return;
+      }
+
       const cached = localStorage.getItem("reconnection");
       if (cached !== null) {
+        isReconnecting = true;
         try {
           const parsed = JSON.parse(cached) as CachedReconnection;
           const { token } = parsed;
 
           const reconnected = await client.reconnect(token);
+
           setRoom(reconnected);
           setIsConnected(true);
-        } catch {
+
+          // Update the token for future reconnections
+          localStorage.setItem(
+            "reconnection",
+            JSON.stringify({
+              roomId: reconnected.roomId,
+              token: reconnected.reconnectionToken,
+            }),
+          );
+        } catch (error) {
+          console.error("Reconnection failed:", error);
           localStorage.removeItem("reconnection");
+        } finally {
+          isReconnecting = false;
         }
       }
     };
