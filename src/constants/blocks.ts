@@ -1,6 +1,6 @@
-import crate from "../assets/images/crate.png";
-import ground from "../assets/images/ground.png";
-import wall from "../assets/images/wall.png";
+import crate from "/images/crate.png";
+import ground from "/images/ground.png";
+import wall from "/images/wall.png";
 
 export const BlockTypes = {
   GROUND: 0,

@@ -1,8 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
-import { App } from "./App.tsx";
+import { App } from "./app.tsx";
 import "./index.css";
+import { RoomProvider } from "./lib/room-provider.tsx";
 
 const rootElement = document.querySelector<HTMLDivElement>("#root");
 if (rootElement == null) {
@@ -11,6 +12,8 @@ if (rootElement == null) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    <RoomProvider>
+      <App />
+    </RoomProvider>
   </StrictMode>,
 );

@@ -1,6 +1,4 @@
-import { Client } from "colyseus.js";
-import type { Room } from "colyseus.js";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "../components/button";
@@ -8,29 +6,26 @@ import { ErrorContainer } from "../components/error-container";
 import { Input } from "../components/input";
 import { IntroContainer } from "../components/intro-container";
 import { TitleHeader } from "../components/title-header";
+import { useRoom } from "../lib/use-room";
 
-export function Intro({ setRoom }: { setRoom: (room: Room) => void }) {
+export function Intro() {
   const navigate = useNavigate();
-  const roomRef = useRef<Room | null>(null);
-  const [status, setStatus] = useState<
-    "idle" | "loading" | "error" | "success"
-  >("idle");
+  const { connect } = useRoom();
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [name, setName] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   const handlePlay = async () => {
+    if (name.trim() === "") {
+      return;
+    }
+
     setStatus("loading");
     try {
-      const client = new Client("ws://localhost:2567");
-      const room = await client.joinOrCreate("game_room", { name });
-
-      roomRef.current = room;
-      setStatus("success");
-      setRoom(room);
+      await connect(name.trim());
       await navigate("/game");
-    } catch (error) {
-      setErrorMessage("Nie udało się dołaczyć do gry. Spróbuj ponownie.");
-      console.error("Failed to join the game room:", error); // debug - remove line later before production
+    } catch {
+      setErrorMessage("Wystąpił błąd. Spróbuj ponownie.");
       setStatus("error");
     }
   };
@@ -38,6 +33,7 @@ export function Intro({ setRoom }: { setRoom: (room: Room) => void }) {
   return (
     <IntroContainer>
       <TitleHeader title="Capybara Escape" />
+
       <Input
         value={name}
         placeholder="Elek..."
@@ -46,12 +42,14 @@ export function Intro({ setRoom }: { setRoom: (room: Room) => void }) {
         }}
         disabled={status === "loading"}
       />
+
       <Button
         onClick={handlePlay}
         disabled={status === "loading" || name.trim() === ""}
       >
         {status === "loading" ? "Ładowanie..." : "Graj"}
       </Button>
+
       {status === "error" && <ErrorContainer errorMessage={errorMessage} />}
     </IntroContainer>
   );

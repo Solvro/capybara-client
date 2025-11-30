@@ -1,8 +1,8 @@
-import type { Room } from "colyseus.js";
 import { useEffect, useState } from "react";
 
 import { Tilemap } from "../components/tilemap";
 import { CELL_SIZE } from "../constants/global";
+import { RoomManager } from "../lib/room";
 import type {
   MessageMapInfo,
   MessageOnAddPlayer,
@@ -11,13 +11,15 @@ import type {
 } from "../types/messages";
 import type { Player } from "../types/player";
 
-export function Game({ room }: { room: Room }) {
+export function Game() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [table, setTable] = useState<number[][]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
   const [sessionId, setSessionId] = useState<string>("");
+
+  const room = RoomManager.get();
 
   useEffect(() => {
     room.send("getMapInfo");
