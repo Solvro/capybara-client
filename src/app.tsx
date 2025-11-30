@@ -1,6 +1,6 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
-import { Game } from "./pages/_game";
+import { Game } from "./pages/game";
 import { Intro } from "./pages/intro";
 
 export function App() {
