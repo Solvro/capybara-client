@@ -2,11 +2,12 @@ import { useMemo, useState } from "react";
 
 import { MinigameContainer } from "../components/minigame-container";
 import { BinMinigame } from "../components/minigames/bits/bit-minigame";
-import { WordGuessMinigame } from "../components/minigames/word-guess/word-guess-minigame";
+import { WordGuessMinigame } from "../minigames/word-guess/components/word-guess-minigame";
 import type { Minigame } from "../types/minigames/minigame";
 
 export function Playground() {
   const [currentMinigame, setCurrentMinigame] = useState<Minigame | null>(null);
+  const [isMinigameOpen, setIsMinigameOpen] = useState<boolean>(false);
   const [bitCount1, setBitCount1] = useState<number>(0);
   const [bitCount2, setBitCount2] = useState<number>(0);
 
@@ -17,9 +18,9 @@ export function Playground() {
         content: (
           <BinMinigame
             completeMinigame={() => {
-              setCurrentMinigame(null);
+              setIsMinigameOpen(false);
               setBitCount1((prev) => prev + 1);
-              alert("Bit 1 completed");
+              console.log("Bit 1 completed");
             }}
           />
         ),
@@ -29,9 +30,9 @@ export function Playground() {
         content: (
           <BinMinigame
             completeMinigame={() => {
-              setCurrentMinigame(null);
+              setIsMinigameOpen(false);
               setBitCount2((prev) => prev + 1);
-              alert("Bit 2 completed");
+              console.log("Bit 2 completed");
             }}
           />
         ),
@@ -41,8 +42,8 @@ export function Playground() {
         content: (
           <WordGuessMinigame
             completeMinigame={() => {
-              setCurrentMinigame(null);
-              alert("Word guess completed!");
+              setIsMinigameOpen(false);
+              console.log("Word guess completed!");
             }}
           />
         ),
@@ -65,6 +66,7 @@ export function Playground() {
             setCurrentMinigame(
               minigames.find((m) => m.name == "bit-1") ?? null,
             );
+            setIsMinigameOpen(true);
           }}
         >
           Open bin minigame 1
@@ -75,6 +77,7 @@ export function Playground() {
             setCurrentMinigame(
               minigames.find((m) => m.name == "bit-2") ?? null,
             );
+            setIsMinigameOpen(true);
           }}
         >
           Open bin minigame 2
@@ -85,18 +88,17 @@ export function Playground() {
             setCurrentMinigame(
               minigames.find((m) => m.name == "word-guess") ?? null,
             );
+            setIsMinigameOpen(true);
           }}
         >
           Open word guess minigame
         </button>
       </div>
-      {currentMinigame && (
-        <MinigameContainer
-          isOpen={currentMinigame !== null}
-          onClose={() => setCurrentMinigame(null)}
-          minigame={currentMinigame}
-        />
-      )}
+      <MinigameContainer
+        isOpen={isMinigameOpen}
+        onClose={() => setCurrentMinigame(null)}
+        minigame={currentMinigame}
+      />
     </div>
   );
 }

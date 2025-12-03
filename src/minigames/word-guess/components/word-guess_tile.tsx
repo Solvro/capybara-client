@@ -1,4 +1,4 @@
-import type { WordGuessLetter } from "../../../minigames/word-guess/types/word-guess-letter";
+import type { WordGuessLetter } from "../types/word-guess-letter";
 
 interface WordGuessTileProps {
   letter: WordGuessLetter;
