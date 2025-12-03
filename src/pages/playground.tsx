@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 
-import { BinMinigame } from "../minigames/components/bits/bit-minigame";
-import { MinigameContainer } from "../minigames/components/minigame-container";
-import type { Minigame } from "../minigames/types/minigame";
+import { MinigameContainer } from "../components/minigame-container";
+import { BinMinigame } from "../components/minigames/bits/bit-minigame";
+import { WordGuessMinigame } from "../components/minigames/word-guess/word-guess-minigame";
+import type { Minigame } from "../types/minigames/minigame";
 
 export function Playground() {
   const [currentMinigame, setCurrentMinigame] = useState<Minigame | null>(null);
@@ -31,6 +32,17 @@ export function Playground() {
               setCurrentMinigame(null);
               setBitCount2((prev) => prev + 1);
               alert("Bit 2 completed");
+            }}
+          />
+        ),
+      },
+      {
+        name: "word-guess",
+        content: (
+          <WordGuessMinigame
+            completeMinigame={() => {
+              setCurrentMinigame(null);
+              alert("Word guess completed!");
             }}
           />
         ),
@@ -66,6 +78,16 @@ export function Playground() {
           }}
         >
           Open bin minigame 2
+        </button>
+
+        <button
+          onClick={() => {
+            setCurrentMinigame(
+              minigames.find((m) => m.name == "word-guess") ?? null,
+            );
+          }}
+        >
+          Open word guess minigame
         </button>
       </div>
       {currentMinigame && (

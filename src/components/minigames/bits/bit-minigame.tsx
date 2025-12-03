@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import type { MinigameComponentProps } from "../../types/minigame-components-props";
+import type { MinigameComponentProps } from "../../../types/minigames/minigame-components-props";
 import { BitTile } from "./bit-tile";
 
 export function BinMinigame({ completeMinigame }: MinigameComponentProps) {

@@ -1,6 +1,6 @@
 import { Dialog, DialogPanel } from "@headlessui/react";
 
-import type { Minigame } from "../types/minigame";
+import type { Minigame } from "../types/minigames/minigame";
 
 interface MinigameProps {
   minigame: Minigame;
