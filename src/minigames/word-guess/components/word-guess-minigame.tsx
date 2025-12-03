@@ -26,17 +26,19 @@ export function WordGuessMinigame({
   }, []);
 
   useEffect(() => {
-    console.log(isComplete);
     if (isComplete) {
       completeMinigame();
     }
   }, [isComplete]);
 
   return (
-    <div className="flex gap-4">
-      {letters.map((letter, index) => (
-        <WordGuessTile letter={letter} key={index} />
-      ))}
+    <div className="flex flex-col items-center gap-8">
+      <h2 className="text-xl">Guess hidden letters</h2>
+      <div className="flex gap-8">
+        {letters.map((letter, index) => (
+          <WordGuessTile letter={letter} key={index} />
+        ))}
+      </div>
     </div>
   );
 }

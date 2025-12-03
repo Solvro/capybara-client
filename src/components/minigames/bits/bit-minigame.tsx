@@ -31,14 +31,14 @@ export function BinMinigame({ completeMinigame }: MinigameComponentProps) {
   }, [bits]);
 
   return (
-    <div className="flex flex-col items-center gap-8">
-      <h2 className="text-2xl">Switch the bits to represent the given value</h2>
+    <div className="flex flex-col items-center gap-10">
+      <h2 className="text-2xl">Switch the bits to represent the value</h2>
       <div className="flex gap-4">
         {bits.map((bit, index) => (
           <BitTile bit={bit} switchBit={() => switchBit(index)} />
         ))}
       </div>
-      <h3 className="text-xl">Value to guess: {correctValue.current}</h3>
+      <h3 className="text-lg">Value: {correctValue.current}</h3>
     </div>
   );
 }

@@ -5,14 +5,13 @@ interface WordGuessTileProps {
 }
 
 export function WordGuessTile({ letter }: WordGuessTileProps) {
-  console.log(`${letter.letter} ${letter.guess}`);
   return (
     <div className="h-16 w-12 text-center text-6xl">
       {letter.isCovered ? (
         letter.guess ? (
           <h2
             className={
-              letter.letter === letter.guess ? "text-green-600" : "text-red-600"
+              letter.letter === letter.guess ? "text-green-700" : "text-red-600"
             }
           >
             {letter.guess}

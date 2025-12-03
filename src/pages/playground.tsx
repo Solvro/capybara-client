@@ -10,6 +10,7 @@ export function Playground() {
   const [isMinigameOpen, setIsMinigameOpen] = useState<boolean>(false);
   const [bitCount1, setBitCount1] = useState<number>(0);
   const [bitCount2, setBitCount2] = useState<number>(0);
+  const [wordGuessCount, setWordGuessCount] = useState<number>(0);
 
   const minigames: Minigame[] = useMemo(
     () => [
@@ -43,6 +44,7 @@ export function Playground() {
           <WordGuessMinigame
             completeMinigame={() => {
               setIsMinigameOpen(false);
+              setWordGuessCount((prev) => prev + 1);
               console.log("Word guess completed!");
             }}
           />
@@ -59,6 +61,7 @@ export function Playground() {
 
       <p className="mt-12">Count bit 1: {bitCount1}</p>
       <p>Count bit 2: {bitCount2}</p>
+      <p>Count word guess: {wordGuessCount}</p>
 
       <div className="mt-12 flex flex-col gap-4">
         <button
