@@ -5,6 +5,7 @@
 
 ```
 const [currentMinigame, setCurrentMinigame] = useState<Minigame | null>(null);
+const [isMinigameOpen, setIsMinigameOpen] = useState<boolean>(false);
 ```
 
 3. Make a list of all minigames in the level (usage of useMemo recommended)
@@ -16,7 +17,7 @@ const minigames: Minigame[] = useMemo(() => [
       content: (
         <...
           completeMinigame={() => {
-            setCurrentMinigame(null);
+            setIsMinigameOpen(false);
             ...
           }}
         />
@@ -28,13 +29,11 @@ const minigames: Minigame[] = useMemo(() => [
 4. Include minigame container on the level
 
 ```
-{currentMinigame && (
-  <MinigameContainer
-    isOpen={currentMinigame !== null}
-    onClose={() => setCurrentMinigame(null)}
-    minigame={currentMinigame}
-  />
-)}
+<MinigameContainer
+  isOpen={isMinigameOpen}
+  onClose={() => setCurrentMinigame(null)}
+  minigame={currentMinigame}
+/>
 ```
 
 5. Make button or sth else to open minigame
