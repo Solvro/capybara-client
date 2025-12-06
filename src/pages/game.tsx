@@ -6,13 +6,25 @@ import { PhaserGame } from "../components/phaser-game";
 import { useRoom } from "../lib/use-room";
 
 export function Game() {
-  const { room, isConnected, joinError, disconnect } = useRoom();
+  const { room, isConnected, joinError, disconnect, isReconnecting } =
+    useRoom();
   const [showTimeoutError, setShowTimeoutError] = useState(false);
   const navigate = useNavigate();
 
-  // Only disconnect when explicitly navigating away via the UI button, not on route changes
-  // The disconnect is handled by the button click, not cleanup effect
-  // This prevents creating new players when using browser back/forward
+  // If there's no room, no reconnection in progress, and no error yet,
+  // redirect to intro page so user can enter their name
+  useEffect(() => {
+    if (room !== null || isConnected || isReconnecting || joinError) {
+      return;
+    }
+    // Small delay to allow reconnection to start if it's going to
+    const timer = setTimeout(() => {
+      void navigate("/", { replace: true });
+    }, 500);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [room, isConnected, isReconnecting, joinError, navigate]);
 
   useEffect(() => {
     // If we are already connected or have a join error, no need for timeout
