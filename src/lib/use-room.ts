@@ -6,6 +6,7 @@ interface RoomContextType {
   isConnected: boolean;
   joinError: boolean;
   connect: (playerName: string) => Promise<void>;
+  disconnect: () => Promise<void>;
 }
 
 export const RoomContext = createContext<RoomContextType>({
@@ -13,6 +14,9 @@ export const RoomContext = createContext<RoomContextType>({
   isConnected: false,
   joinError: false,
   connect: async () => {
+    /* placeholder */
+  },
+  disconnect: async () => {
     /* placeholder */
   },
 });

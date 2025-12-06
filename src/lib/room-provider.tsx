@@ -9,6 +9,8 @@ const client = new Client("ws://localhost:2567");
 interface CachedReconnection {
   roomId: string;
   token: string;
+  playerId: string;
+  playerName: string;
 }
 
 // Global flag to prevent double reconnection in Strict Mode
@@ -18,6 +20,7 @@ export function RoomProvider({ children }: { children: React.ReactNode }) {
   const [room, setRoom] = useState<Room | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [joinError, setJoinError] = useState(false);
+  const [playerId, setPlayerId] = useState<string | null>(null);
 
   const connect = async (playerName: string) => {
     try {
@@ -26,17 +29,30 @@ export function RoomProvider({ children }: { children: React.ReactNode }) {
       });
       setRoom(newRoom);
       setIsConnected(true);
+      setPlayerId(crypto.randomUUID());
       localStorage.setItem(
         "reconnection",
         JSON.stringify({
           roomId: newRoom.roomId,
           token: newRoom.reconnectionToken,
+          playerId,
+          playerName,
         }),
       );
     } catch (error) {
       console.error("Join error", error);
       setJoinError(true);
       throw error;
+    }
+  };
+
+  const disconnect = async () => {
+    if (room !== null) {
+      await room.leave();
+      setRoom(null);
+      setIsConnected(false);
+      setPlayerId(null);
+      localStorage.removeItem("reconnection");
     }
   };
 
@@ -79,7 +95,9 @@ export function RoomProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <RoomContext.Provider value={{ room, isConnected, joinError, connect }}>
+    <RoomContext.Provider
+      value={{ room, isConnected, joinError, connect, disconnect }}
+    >
       {children}
     </RoomContext.Provider>
   );

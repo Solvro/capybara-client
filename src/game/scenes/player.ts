@@ -2,6 +2,8 @@ import { CELL_SIZE } from "../../constants/global";
 
 export class PlayerEntity extends Phaser.GameObjects.Container {
   public skinIndex: number;
+  public readonly rawName: string;
+  public readonly isLocalPlayer: boolean;
   private sprite: Phaser.GameObjects.Sprite;
   private nameText: Phaser.GameObjects.Text;
   private targetX: number;
@@ -20,6 +22,8 @@ export class PlayerEntity extends Phaser.GameObjects.Container {
     this.targetX = x;
     this.targetY = y;
     this.skinIndex = skinIndex;
+    this.rawName = name;
+    this.isLocalPlayer = isCurrentPlayer;
 
     // Create Sprite
     this.sprite = scene.add.sprite(0, 0, texture);
@@ -29,7 +33,7 @@ export class PlayerEntity extends Phaser.GameObjects.Container {
     this.nameText = scene.add.text(
       0,
       -CELL_SIZE / 2 - 10,
-      isCurrentPlayer ? `${name} (You)` : name,
+      this.isLocalPlayer ? `${name} (You)` : name,
       {
         fontSize: "12px",
         color: "#ffffff",
@@ -43,7 +47,7 @@ export class PlayerEntity extends Phaser.GameObjects.Container {
   }
 
   public get playerName(): string {
-    return this.nameText.text;
+    return this.rawName;
   }
 
   movePlayerTo(gridX: number, gridY: number) {

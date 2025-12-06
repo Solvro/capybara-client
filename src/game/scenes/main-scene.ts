@@ -13,6 +13,7 @@ import type {
 import { PlayerEntity } from "./player";
 
 // Helper class to group Sprite + Name Tag
+type PlayerLookupPreference = "any" | "local" | "remote";
 
 export class MainScene extends Phaser.Scene {
   private players = new Map<string, PlayerEntity>();
@@ -24,6 +25,7 @@ export class MainScene extends Phaser.Scene {
     D: Phaser.Input.Keyboard.Key;
   };
   private lastMoveTime = 0;
+  private currentPlayerName: string | null = null;
 
   constructor() {
     super("MainGame");
@@ -104,38 +106,36 @@ export class MainScene extends Phaser.Scene {
       });
 
       room.onMessage("onAddPlayer", (message: MessageOnAddPlayer) => {
-        if (!this.players.has(message.playerName)) {
-          this.addPlayer(
-            message.sessionId,
-            message.playerName,
-            message.position.x,
-            message.position.y,
-            message.index,
-            message.sessionId === room.sessionId,
-          );
+        if (this.players.has(message.sessionId)) {
+          return;
         }
+
+        this.addPlayer(
+          message.sessionId,
+          message.playerName,
+          message.position.x,
+          message.position.y,
+          message.index,
+          message.sessionId === room.sessionId,
+        );
       });
 
       room.onMessage("onRemovePlayer", (message: MessageOnRemovePlayer) => {
-        // Based on React code, it filters by name. Let's find the entity by name.
-        // Ideally, server should send sessionId for removal too.
-        // For now, let's iterate values to find the name.
-        for (const [id, entity] of this.players.entries()) {
-          if (entity.playerName.startsWith(message.playerName)) {
-            entity.destroy();
-            this.players.delete(id);
-            break;
-          }
+        const removed =
+          this.removePlayerByName(message.playerName, "remote") ??
+          this.removePlayerByName(message.playerName, "any");
+
+        if (removed == null) {
+          console.warn("Player removal requested for unknown name", message);
         }
       });
 
       room.onMessage("positionUpdate", (message: MessagePositionUpdate) => {
-        // Find player by name (React code used name)
-        for (const entity of this.players.values()) {
-          if (entity.playerName.startsWith(message.playerName)) {
-            entity.movePlayerTo(message.position.x, message.position.y);
-          }
-        }
+        const preference =
+          this.currentPlayerName === message.playerName ? "local" : "any";
+
+        const target = this.findPlayerByName(message.playerName, preference);
+        target?.movePlayerTo(message.position.x, message.position.y);
       });
 
       // Request initial state
@@ -231,5 +231,63 @@ export class MainScene extends Phaser.Scene {
     player.setDepth(10); // Above tiles
 
     this.players.set(sessionId, player);
+
+    if (isMe) {
+      this.currentPlayerName = name;
+    }
+  }
+
+  private findPlayerByName(
+    playerName: string,
+    preference: PlayerLookupPreference,
+  ): PlayerEntity | null {
+    const isLocalPreference = preference === "local";
+    const isRemotePreference = preference === "remote";
+
+    for (const entity of this.players.values()) {
+      if (entity.playerName !== playerName) {
+        continue;
+      }
+
+      if (isLocalPreference && entity.isLocalPlayer !== true) {
+        continue;
+      }
+
+      if (isRemotePreference && entity.isLocalPlayer === true) {
+        continue;
+      }
+
+      return entity;
+    }
+
+    return null;
+  }
+
+  private removePlayerByName(
+    playerName: string,
+    preference: PlayerLookupPreference,
+  ): PlayerEntity | null {
+    const isLocalPreference = preference === "local";
+    const isRemotePreference = preference === "remote";
+
+    for (const [sessionId, entity] of this.players.entries()) {
+      if (entity.playerName !== playerName) {
+        continue;
+      }
+
+      if (isLocalPreference && entity.isLocalPlayer !== true) {
+        continue;
+      }
+
+      if (isRemotePreference && entity.isLocalPlayer === true) {
+        continue;
+      }
+
+      entity.destroy();
+      this.players.delete(sessionId);
+      return entity;
+    }
+
+    return null;
   }
 }
