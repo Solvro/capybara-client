@@ -22,3 +22,8 @@ export interface MessageOnAddPlayer {
 export interface MessageOnRemovePlayer {
   playerName: string;
 }
+
+export interface MessageBoxDestroyed {
+  hits: { type: "box"; x: number; y: number }[];
+  color: string;
+}

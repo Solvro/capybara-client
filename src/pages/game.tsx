@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Tilemap } from "../components/tilemap";
 import { CELL_SIZE } from "../constants/global";
 import type {
+  MessageBoxDestroyed,
   MessageMapInfo,
   MessageOnAddPlayer,
   MessageOnRemovePlayer,
@@ -66,6 +67,18 @@ export function Game({ room }: { room: Room }) {
       setPlayers((previousPlayers) =>
         previousPlayers.filter((player) => player.name !== message.playerName),
       );
+    });
+
+    room.onMessage("box_destroyed", (message: MessageBoxDestroyed) => {
+      setTable((prevTable) => {
+        const newTable = prevTable.map((row) => [...row]);
+        message.hits.forEach((hit) => {
+          if (newTable[hit.y] && newTable[hit.y][hit.x] !== undefined) {
+            newTable[hit.y][hit.x] = 0; // Set to GROUND
+          }
+        });
+        return newTable;
+      });
     });
 
     const handleKeyDown = (event: KeyboardEvent) => {
