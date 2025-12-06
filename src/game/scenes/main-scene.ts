@@ -7,6 +7,7 @@ import { PLAYER_SPRITES } from "../../constants/player-sprites";
 import type {
   MessageMapInfo,
   MessageOnAddPlayer,
+  MessageOnPlayerSessionTransfer,
   MessageOnRemovePlayer,
   MessagePositionUpdate,
 } from "../../types/messages";
@@ -129,6 +130,40 @@ export class MainScene extends Phaser.Scene {
           console.warn("Player removal requested for unknown name", message);
         }
       });
+
+      room.onMessage(
+        "onPlayerSessionTransfer",
+        (message: MessageOnPlayerSessionTransfer) => {
+          // Session transfer: same player, new session ID
+          // Remove old player entity and create new one with correct isLocalPlayer flag
+          const existingEntity = this.players.get(message.oldSessionId);
+
+          if (existingEntity !== null && existingEntity !== undefined) {
+            // Destroy the old entity
+            existingEntity.destroy();
+            this.players.delete(message.oldSessionId);
+          }
+
+          // Create new entity with the transferred state
+          const isNowLocal = message.newSessionId === room.sessionId;
+          this.addPlayer(
+            message.newSessionId,
+            message.playerName,
+            message.position.x,
+            message.position.y,
+            message.index,
+            isNowLocal,
+          );
+
+          if (isNowLocal) {
+            this.currentPlayerName = message.playerName;
+          }
+
+          console.warn(
+            `Session transfer: ${message.playerName} (${message.oldSessionId} -> ${message.newSessionId})`,
+          );
+        },
+      );
 
       room.onMessage("positionUpdate", (message: MessagePositionUpdate) => {
         const preference =

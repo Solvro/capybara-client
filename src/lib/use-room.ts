@@ -5,6 +5,7 @@ interface RoomContextType {
   room: Room | null;
   isConnected: boolean;
   joinError: boolean;
+  isReconnecting: boolean;
   connect: (playerName: string) => Promise<void>;
   disconnect: () => Promise<void>;
 }
@@ -13,6 +14,7 @@ export const RoomContext = createContext<RoomContextType>({
   room: null,
   isConnected: false,
   joinError: false,
+  isReconnecting: false,
   connect: async () => {
     /* placeholder */
   },

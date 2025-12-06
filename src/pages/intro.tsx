@@ -10,19 +10,38 @@ import { useRoom } from "../lib/use-room";
 
 export function Intro() {
   const navigate = useNavigate();
-  const { connect, disconnect } = useRoom();
+  const { connect, disconnect, isReconnecting, room } = useRoom();
 
   // ui states
   const [status, setStatus] = useState<
     "idle" | "loading" | "error" | "rejoining"
-  >(() => {
-    return localStorage.getItem("reconnection") === null ? "idle" : "rejoining";
-  });
+  >("idle");
   const [name, setName] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   // room rejoin timeout
   const [countdown, setCountdown] = useState(3);
+
+  // keep local status in sync with provider-driven reconnection state
+  // The countdown UI depends on provider-driven reconnection transitions.
+  // eslint-disable-next-line react-you-might-not-need-an-effect/no-event-handler
+  useEffect(() => {
+    if (isReconnecting) {
+      setStatus("rejoining");
+      return;
+    }
+
+    if (status !== "rejoining") {
+      return;
+    }
+
+    if (room !== null) {
+      return;
+    }
+
+    setStatus("idle");
+    setCountdown(3);
+  }, [isReconnecting, status, room]);
 
   // handle timer and redirect
   useEffect(() => {
@@ -50,7 +69,6 @@ export function Intro() {
 
   // remove the room connection and go back to 'base state'
   const handleCancelRejoin = async () => {
-    localStorage.removeItem("reconnection");
     await disconnect();
     setStatus("idle");
     setCountdown(3);

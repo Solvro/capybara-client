@@ -22,3 +22,11 @@ export interface MessageOnAddPlayer {
 export interface MessageOnRemovePlayer {
   playerName: string;
 }
+
+export interface MessageOnPlayerSessionTransfer {
+  playerName: string;
+  position: { x: number; y: number };
+  index: number;
+  oldSessionId: string;
+  newSessionId: string;
+}
