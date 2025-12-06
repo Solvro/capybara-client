@@ -11,6 +11,7 @@ const SESSION_KEY = "capybara_session";
 interface SessionData {
   reconnectionToken: string;
   playerName: string;
+  gameId: string;
 }
 
 function getSession(): SessionData | null {
@@ -25,10 +26,10 @@ function getSession(): SessionData | null {
   }
 }
 
-function saveSession(token: string, playerName: string): void {
+function saveSession(token: string, playerName: string, gameId: string): void {
   sessionStorage.setItem(
     SESSION_KEY,
-    JSON.stringify({ reconnectionToken: token, playerName }),
+    JSON.stringify({ reconnectionToken: token, playerName, gameId }),
   );
 }
 
@@ -38,8 +39,10 @@ function clearSession(): void {
 
 export function RoomProvider({ children }: { children: React.ReactNode }) {
   const [room, setRoom] = useState<Room | null>(null);
+  const [gameId, setGameId] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [joinError, setJoinError] = useState(false);
+  const [joinErrorMessage, setJoinErrorMessage] = useState<string | null>(null);
   const [isReconnecting, setIsReconnecting] = useState(false);
 
   // Use ref to track the actual room instance (survives re-renders and closures)
@@ -65,7 +68,7 @@ export function RoomProvider({ children }: { children: React.ReactNode }) {
   );
 
   const setupRoomHandlers = useCallback(
-    (activeRoom: Room, playerName: string) => {
+    (activeRoom: Room, playerName: string, activeGameId: string) => {
       activeRoom.onMessage(
         "error",
         (payload: { code?: string; message?: string }) => {
@@ -76,6 +79,13 @@ export function RoomProvider({ children }: { children: React.ReactNode }) {
               payload.message ??
                 "Disconnected: new login from another location",
             );
+          } else if (payload.code === "name_taken") {
+            // Name was taken - set error and disconnect
+            intentionalDisconnectRef.current = true;
+            clearSession();
+            setJoinError(true);
+            setJoinErrorMessage(payload.message ?? "Name is already taken");
+            console.warn(payload.message ?? "Name is already taken");
           }
         },
       );
@@ -85,6 +95,7 @@ export function RoomProvider({ children }: { children: React.ReactNode }) {
         if (roomRef.current === activeRoom) {
           roomRef.current = null;
           setRoom(null);
+          setGameId(null);
           setIsConnected(false);
 
           if (intentionalDisconnectRef.current) {
@@ -95,14 +106,14 @@ export function RoomProvider({ children }: { children: React.ReactNode }) {
       });
 
       // Save session for reconnection
-      saveSession(activeRoom.reconnectionToken, playerName);
+      saveSession(activeRoom.reconnectionToken, playerName, activeGameId);
     },
     [],
   );
 
   // Connect to a new game
   const connect = useCallback(
-    async (playerName: string) => {
+    async (playerName: string, targetGameId?: string) => {
       if (connectingRef.current) {
         console.warn("Connection already in progress");
         return;
@@ -110,6 +121,7 @@ export function RoomProvider({ children }: { children: React.ReactNode }) {
 
       connectingRef.current = true;
       setJoinError(false);
+      setJoinErrorMessage(null);
 
       try {
         // Always leave any existing room first (using ref for reliable access)
@@ -119,17 +131,23 @@ export function RoomProvider({ children }: { children: React.ReactNode }) {
           roomRef.current = null;
           setRoom(null);
           setIsConnected(false);
+          setGameId(null);
         }
 
         // Clear any existing session
         clearSession();
 
+        // Use provided gameId or generate a default one
+        const finalGameId = targetGameId ?? "default";
+
         const newRoom = await client.joinOrCreate("game_room", {
           name: playerName,
+          gameId: finalGameId,
         });
         roomRef.current = newRoom;
-        setupRoomHandlers(newRoom, playerName);
+        setupRoomHandlers(newRoom, playerName, finalGameId);
         setRoom(newRoom);
+        setGameId(finalGameId);
         setIsConnected(true);
       } catch (error) {
         console.error("Failed to join room:", error);
@@ -177,8 +195,9 @@ export function RoomProvider({ children }: { children: React.ReactNode }) {
           session.reconnectionToken,
         );
         roomRef.current = reconnectedRoom;
-        setupRoomHandlers(reconnectedRoom, session.playerName);
+        setupRoomHandlers(reconnectedRoom, session.playerName, session.gameId);
         setRoom(reconnectedRoom);
+        setGameId(session.gameId);
         setIsConnected(true);
       } catch (error) {
         console.error("Reconnection failed:", error);
@@ -196,8 +215,10 @@ export function RoomProvider({ children }: { children: React.ReactNode }) {
     <RoomContext.Provider
       value={{
         room,
+        gameId,
         isConnected,
         joinError,
+        joinErrorMessage,
         isReconnecting,
         connect,
         disconnect,

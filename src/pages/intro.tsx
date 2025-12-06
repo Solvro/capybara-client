@@ -10,13 +10,15 @@ import { useRoom } from "../lib/use-room";
 
 export function Intro() {
   const navigate = useNavigate();
-  const { connect, disconnect, isReconnecting, room } = useRoom();
+  const { connect, disconnect, isReconnecting, room, joinErrorMessage } =
+    useRoom();
 
   // ui states
   const [status, setStatus] = useState<
     "idle" | "loading" | "error" | "rejoining"
   >("idle");
   const [name, setName] = useState("");
+  const [gameIdInput, setGameIdInput] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   // room rejoin timeout
@@ -81,10 +83,16 @@ export function Intro() {
 
     setStatus("loading");
     try {
-      await connect(name.trim());
+      const targetGameId = gameIdInput.trim() || undefined;
+      await connect(name.trim(), targetGameId);
       await navigate("/game");
     } catch {
-      setErrorMessage("Wystąpił błąd. Spróbuj ponownie.");
+      // Use the specific error message from context if available
+      if (joinErrorMessage !== null) {
+        setErrorMessage(joinErrorMessage);
+      } else {
+        setErrorMessage("Wystąpił błąd. Spróbuj ponownie.");
+      }
       setStatus("error");
     }
   };
@@ -108,9 +116,18 @@ export function Intro() {
         <>
           <Input
             value={name}
-            placeholder="Elek..."
+            placeholder="Nickname..."
             setValue={(value) => {
               setName(value.toUpperCase());
+            }}
+            disabled={status === "loading"}
+          />
+
+          <Input
+            value={gameIdInput}
+            placeholder="Game ID (optional)"
+            setValue={(value) => {
+              setGameIdInput(value.toLowerCase().replace(/[^a-z0-9-_]/g, ""));
             }}
             disabled={status === "loading"}
           />
