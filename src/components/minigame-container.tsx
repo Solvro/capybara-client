@@ -36,8 +36,8 @@ export function MinigameContainer({
             leaveFrom="opacity-100 translate-y-0 scale-100"
             leaveTo="opacity-0 translate-y-8 scale-90"
           >
-            <DialogPanel className="mx-32 h-1/2 w-full rounded-xl bg-linear-to-br from-indigo-700/97 to-fuchsia-800/97 p-8 shadow-xl">
-              <div className="flex min-h-full items-center justify-center">
+            <DialogPanel className="mx-32 flex h-1/2 w-full items-center justify-center rounded-xl bg-linear-to-br from-indigo-700/97 to-fuchsia-800/97 p-8 shadow-xl">
+              <div className="flex h-full w-full items-center justify-center">
                 {minigame.content}
               </div>
             </DialogPanel>

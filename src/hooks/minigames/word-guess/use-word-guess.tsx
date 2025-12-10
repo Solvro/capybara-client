@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import type { WordGuessLetter } from "../types/word-guess-letter";
-import type { WordGuessWord } from "../types/word-guess-word";
+import type { WordGuessLetter } from "../../../types/minigames/word-guess/word-guess-letter";
+import type { WordGuessWord } from "../../../types/minigames/word-guess/word-guess-word";
 
 export function useWordGuess(word: WordGuessWord) {
   const [letters, setLetters] = useState<WordGuessLetter[]>([]);
+  const [mistakes, setMistakes] = useState<number>(0);
+  const shouldIncrementMistakes = useRef(false);
 
   useEffect(() => {
     const newLetters: WordGuessLetter[] = [];
@@ -19,6 +21,13 @@ export function useWordGuess(word: WordGuessWord) {
 
     setLetters(newLetters);
   }, [word.initial, word.word]);
+
+  useEffect(() => {
+    if (shouldIncrementMistakes.current) {
+      setMistakes((prev) => prev + 1);
+      shouldIncrementMistakes.current = false;
+    }
+  }, [letters]);
 
   const isComplete = useMemo(
     () =>
@@ -39,6 +48,10 @@ export function useWordGuess(word: WordGuessWord) {
         );
 
         if (letterIndex === -1) return prevLetters;
+
+        if (guess !== updatedLetters[letterIndex].letter) {
+          shouldIncrementMistakes.current = true;
+        }
 
         updatedLetters[letterIndex] = {
           ...updatedLetters[letterIndex],
@@ -68,5 +81,5 @@ export function useWordGuess(word: WordGuessWord) {
     }
   };
 
-  return { letters, setGuess, isComplete };
+  return { letters, mistakes, setGuess, isComplete };
 }

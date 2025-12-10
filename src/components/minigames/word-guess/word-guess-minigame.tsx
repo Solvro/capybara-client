@@ -9,13 +9,16 @@ const mockWords: WordGuessWord[] = [
   {
     word: "SOLVRO",
     initial: "SOL__O",
+    hintMessage: "Jak nazywa się nasze koło naukowe?",
   },
 ];
 
 export function WordGuessMinigame({
   completeMinigame,
 }: MinigameComponentProps) {
-  const { letters, setGuess, isComplete } = useWordGuess(mockWords[0]);
+  const { letters, mistakes, setGuess, isComplete } = useWordGuess(
+    mockWords[0],
+  );
 
   const handleKeyPress = (event: KeyboardEvent) => {
     setGuess(event.key);
@@ -32,12 +35,15 @@ export function WordGuessMinigame({
   }, [isComplete]);
 
   return (
-    <div className="flex flex-col items-center gap-8">
-      <h2 className="text-xl">Guess hidden letters</h2>
-      <div className="flex gap-8">
-        {letters.map((letter, index) => (
-          <WordGuessTile letter={letter} key={index} />
-        ))}
+    <div className="relative h-full w-full">
+      <h3 className="absolute top-1 right-1">Mistakes: {mistakes}/5</h3>
+      <div className="flex h-full flex-col items-center justify-center gap-8">
+        <h2 className="text-xl">Guess hidden letters</h2>
+        <div className="flex gap-8">
+          {letters.map((letter, index) => (
+            <WordGuessTile letter={letter} key={index} />
+          ))}
+        </div>
       </div>
     </div>
   );
