@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 
 import { MinigameContainer } from "../components/minigame-container";
 import { BinMinigame } from "../components/minigames/bits/bit-minigame";
-import { WordGuessMinigame } from "../minigames/word-guess/components/word-guess-minigame";
+import { WordGuessMinigame } from "../components/minigames/word-guess/word-guess-minigame";
 import type { Minigame } from "../types/minigames/minigame";
 
 export function Playground() {
