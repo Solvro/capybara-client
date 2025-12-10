@@ -29,6 +29,8 @@ export function useWordGuess(word: WordGuessWord) {
     }
   }, [letters]);
 
+  const shouldDisplayHint = mistakes >= 3;
+
   const isComplete = useMemo(
     () =>
       letters.length > 0 &&
@@ -81,5 +83,5 @@ export function useWordGuess(word: WordGuessWord) {
     }
   };
 
-  return { letters, mistakes, setGuess, isComplete };
+  return { letters, mistakes, setGuess, isComplete, shouldDisplayHint };
 }
