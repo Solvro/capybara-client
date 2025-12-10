@@ -10,9 +10,7 @@ export function WordGuessTile({ letter }: WordGuessTileProps) {
       {letter.isCovered ? (
         letter.guess ? (
           <h2
-            className={
-              letter.letter === letter.guess ? "text-green-700" : "text-red-600"
-            }
+            className={`${letter.letter === letter.guess ? "text-green-700" : "animate-bounce text-red-600"} `}
           >
             {letter.guess}
           </h2>
