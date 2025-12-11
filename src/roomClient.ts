@@ -6,6 +6,10 @@ export function setRoom(r: Room) {
   room = r;
 }
 
+export function getRoom() {
+  return room;
+}
+
 export function fireLaser(payload: {
   start?: { x: number; y: number };
   dir: { dx: number; dy: number };
@@ -15,10 +19,12 @@ export function fireLaser(payload: {
     console.warn("room not set");
     return;
   }
-  room.send("fire_laser", payload);
+  room.send("toggle_laser", payload);
 }
 
 export function on(event: string, handler: any) {
-  if (!room) return;
+  if (!room) {
+    return;
+  }
   room.onMessage(event, handler);
 }

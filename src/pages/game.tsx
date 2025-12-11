@@ -1,6 +1,7 @@
 import type { Room } from "colyseus.js";
 import { useEffect, useState } from "react";
 
+import { GameControls, LaserRenderer } from "../components/laser";
 import { Tilemap } from "../components/tilemap";
 import { CELL_SIZE } from "../constants/global";
 import type {
@@ -122,13 +123,21 @@ export function Game({ room }: { room: Room }) {
   return isLoading ? (
     <div>Loading...</div>
   ) : (
-    <Tilemap
-      width={width}
-      height={height}
-      cellSize={CELL_SIZE}
-      initialTable={table}
-      players={players}
-      clientId={sessionId}
-    />
+    <>
+      <div
+        style={{ position: "relative", width: "fit-content", margin: "0 auto" }}
+      >
+        <Tilemap
+          width={width}
+          height={height}
+          cellSize={CELL_SIZE}
+          initialTable={table}
+          players={players}
+          clientId={sessionId}
+        />
+        <LaserRenderer />
+      </div>
+      <GameControls />
+    </>
   );
 }
