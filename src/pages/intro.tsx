@@ -8,6 +8,7 @@ import { ErrorContainer } from "../components/error-container";
 import { Input } from "../components/input";
 import { IntroContainer } from "../components/intro-container";
 import { TitleHeader } from "../components/title-header";
+import { setRoom as setGlobalRoom } from "../roomClient";
 
 export function Intro({ setRoom }: { setRoom: (room: Room) => void }) {
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ export function Intro({ setRoom }: { setRoom: (room: Room) => void }) {
       roomRef.current = room;
       setStatus("success");
       setRoom(room);
+      setGlobalRoom(room);
       await navigate("/game");
     } catch (error) {
       setErrorMessage("Nie udało się dołaczyć do gry. Spróbuj ponownie.");

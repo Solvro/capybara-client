@@ -1,9 +1,11 @@
 import type { Room } from "colyseus.js";
 import { useEffect, useState } from "react";
 
+import { GameControls, LaserRenderer } from "../components/laser";
 import { Tilemap } from "../components/tilemap";
 import { CELL_SIZE } from "../constants/global";
 import type {
+  MessageBoxDestroyed,
   MessageMapInfo,
   MessageOnAddPlayer,
   MessageOnRemovePlayer,
@@ -68,6 +70,18 @@ export function Game({ room }: { room: Room }) {
       );
     });
 
+    room.onMessage("box_destroyed", (message: MessageBoxDestroyed) => {
+      setTable((prevTable) => {
+        const newTable = prevTable.map((row) => [...row]);
+        message.hits.forEach((hit) => {
+          if (newTable[hit.y] && newTable[hit.y][hit.x] !== undefined) {
+            newTable[hit.y][hit.x] = 0; // Set to GROUND
+          }
+        });
+        return newTable;
+      });
+    });
+
     const handleKeyDown = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase();
       let x = 0;
@@ -109,13 +123,21 @@ export function Game({ room }: { room: Room }) {
   return isLoading ? (
     <div>Loading...</div>
   ) : (
-    <Tilemap
-      width={width}
-      height={height}
-      cellSize={CELL_SIZE}
-      initialTable={table}
-      players={players}
-      clientId={sessionId}
-    />
+    <>
+      <div
+        style={{ position: "relative", width: "fit-content", margin: "0 auto" }}
+      >
+        <Tilemap
+          width={width}
+          height={height}
+          cellSize={CELL_SIZE}
+          initialTable={table}
+          players={players}
+          clientId={sessionId}
+        />
+        <LaserRenderer />
+      </div>
+      <GameControls />
+    </>
   );
 }
