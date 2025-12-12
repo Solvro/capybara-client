@@ -31,6 +31,8 @@ export function useWordGuess(word: WordGuessWord) {
 
   const shouldDisplayHint = mistakes >= 3;
 
+  const isFailed = mistakes >= 5;
+
   const isComplete = useMemo(
     () =>
       letters.length > 0 &&
@@ -51,7 +53,7 @@ export function useWordGuess(word: WordGuessWord) {
 
         if (letterIndex === -1) return prevLetters;
 
-        if (guess !== updatedLetters[letterIndex].letter) {
+        if (guess.toUpperCase() !== updatedLetters[letterIndex].letter) {
           shouldIncrementMistakes.current = true;
         }
 
@@ -83,5 +85,12 @@ export function useWordGuess(word: WordGuessWord) {
     }
   };
 
-  return { letters, mistakes, setGuess, isComplete, shouldDisplayHint };
+  return {
+    letters,
+    mistakes,
+    setGuess,
+    isComplete,
+    isFailed,
+    shouldDisplayHint,
+  };
 }

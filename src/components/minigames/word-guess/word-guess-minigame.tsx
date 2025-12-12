@@ -15,9 +15,16 @@ const mockWords: WordGuessWord[] = [
 
 export function WordGuessMinigame({
   completeMinigame,
+  failMinigame,
 }: MinigameComponentProps) {
-  const { letters, mistakes, setGuess, isComplete, shouldDisplayHint } =
-    useWordGuess(mockWords[0]);
+  const {
+    letters,
+    mistakes,
+    setGuess,
+    isComplete,
+    isFailed,
+    shouldDisplayHint,
+  } = useWordGuess(mockWords[0]);
 
   const handleKeyPress = (event: KeyboardEvent) => {
     setGuess(event.key);
@@ -33,9 +40,15 @@ export function WordGuessMinigame({
     }
   }, [isComplete]);
 
+  useEffect(() => {
+    if (failMinigame !== undefined && isFailed) {
+      failMinigame();
+    }
+  }, [isFailed]);
+
   return (
     <div className="relative h-full w-full">
-      <h3 className="absolute top-1 right-1">Mistakes: {mistakes}/5</h3>
+      <h3 className="absolute top-1 right-10">Mistakes: {mistakes}/5</h3>
       <div className="flex h-full flex-col items-center justify-center gap-8 text-center">
         <h2 className="text-xl">Guess hidden letters</h2>
         <div className="flex gap-8">

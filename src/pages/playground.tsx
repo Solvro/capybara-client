@@ -47,6 +47,10 @@ export function Playground() {
               setWordGuessCount((prev) => prev + 1);
               console.log("Word guess completed!");
             }}
+            failMinigame={() => {
+              setIsMinigameOpen(false);
+              console.log("Word guess failed!");
+            }}
           />
         ),
       },
