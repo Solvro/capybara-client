@@ -10,7 +10,13 @@ import type {
 import type { Player as PlayerType } from "../../types/player";
 import { Player } from "../entities/player";
 import { TILE_SIZE } from "../lib/const";
-import { SpriteAnimator } from "../lib/sprite-animator";
+import {
+  PLAYER_TEXTURE_KEYS,
+  createPlayerAnimators,
+  getPlayerAnimator,
+  getPlayerTextureKey,
+} from "../lib/player-animators";
+import type { SpriteAnimator } from "../lib/sprite-animator";
 import { getTileName } from "../lib/utils";
 
 export class Main extends Phaser.Scene {
@@ -24,7 +30,7 @@ export class Main extends Phaser.Scene {
     D: Phaser.Input.Keyboard.Key;
   };
   private playerMoveDebounce = 0;
-  private playerAnimator!: SpriteAnimator;
+  private playerAnimators!: SpriteAnimator[];
 
   constructor() {
     super({ key: "Main" });
@@ -43,49 +49,24 @@ export class Main extends Phaser.Scene {
     this.load.image("wall", "images/wall.png");
     this.load.image("crate", "images/crate.png");
     this.load.image("ground", "images/ground.png");
-    this.load.spritesheet("player", "images/players/1.png", {
-      frameWidth: 64,
-      frameHeight: 64,
-    });
+
+    for (const [index, textureKey] of PLAYER_TEXTURE_KEYS.entries()) {
+      this.load.spritesheet(
+        textureKey,
+        `images/players/${String(index + 1)}.png`,
+        {
+          frameWidth: 64,
+          frameHeight: 64,
+        },
+      );
+    }
   }
 
   create() {
-    // Animations setup
-    this.playerAnimator = new SpriteAnimator("player", {
-      frameWidth: 64,
-      frameHeight: 64,
-      animations: [
-        {
-          name: "walk-up",
-          startFrame: 0,
-          endFrame: 2,
-          frameRate: 8,
-          loop: true,
-        },
-        {
-          name: "walk-down",
-          startFrame: 3,
-          endFrame: 5,
-          frameRate: 8,
-          loop: true,
-        },
-        {
-          name: "walk-left",
-          startFrame: 6,
-          endFrame: 8,
-          frameRate: 8,
-          loop: true,
-        },
-        {
-          name: "walk-right",
-          startFrame: 9,
-          endFrame: 11,
-          frameRate: 8,
-          loop: true,
-        },
-      ],
-    });
-    this.playerAnimator.register(this);
+    this.playerAnimators = createPlayerAnimators();
+    for (const animator of this.playerAnimators) {
+      animator.register(this);
+    }
 
     // Input setup
     if (this.input.keyboard !== null) {
@@ -151,6 +132,12 @@ export class Main extends Phaser.Scene {
   }
 
   private addPlayer(playerSpawnInfo: PlayerType) {
+    const textureKey = getPlayerTextureKey(playerSpawnInfo.index);
+    const animator = getPlayerAnimator(
+      this.playerAnimators,
+      playerSpawnInfo.index,
+    );
+
     const player = new Player(
       this,
       playerSpawnInfo.x,
@@ -158,8 +145,8 @@ export class Main extends Phaser.Scene {
       playerSpawnInfo.name,
       playerSpawnInfo.sessionId,
       playerSpawnInfo.isLocal,
-      "player",
-      this.playerAnimator,
+      textureKey,
+      animator,
     );
     this.players.set(playerSpawnInfo.sessionId, player);
     this.add.existing(player);

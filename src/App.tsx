@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/filename-case */
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
 import { Game } from "./pages/game";
