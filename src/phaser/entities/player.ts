@@ -1,6 +1,7 @@
 import { CELL_SIZE } from "../../constants/global";
 import type { SpriteAnimator } from "../lib/sprite-animator";
 import { Entity } from "./entity";
+import type { Direction } from "./entity";
 
 export class Player extends Entity {
   public readonly name: string;
@@ -31,6 +32,10 @@ export class Player extends Entity {
       })
       .setOrigin(0.5, 1);
     this.add(this.nameText);
+  }
+
+  move(direction: Direction, ease = "Circular") {
+    super.move(direction, ease);
   }
 
   public get playerName(): string {

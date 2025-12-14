@@ -43,7 +43,7 @@ export class Main extends Phaser.Scene {
     this.load.image("wall", "images/wall.png");
     this.load.image("crate", "images/crate.png");
     this.load.image("ground", "images/ground.png");
-    this.load.spritesheet("player", "images/mimi_walk.png", {
+    this.load.spritesheet("player", "images/players/1.png", {
       frameWidth: 64,
       frameHeight: 64,
     });
@@ -58,28 +58,28 @@ export class Main extends Phaser.Scene {
         {
           name: "walk-up",
           startFrame: 0,
-          endFrame: 3,
+          endFrame: 2,
           frameRate: 8,
           loop: true,
         },
         {
           name: "walk-down",
-          startFrame: 4,
-          endFrame: 7,
+          startFrame: 3,
+          endFrame: 5,
           frameRate: 8,
           loop: true,
         },
         {
           name: "walk-left",
-          startFrame: 8,
-          endFrame: 11,
+          startFrame: 6,
+          endFrame: 8,
           frameRate: 8,
           loop: true,
         },
         {
           name: "walk-right",
-          startFrame: 12,
-          endFrame: 15,
+          startFrame: 9,
+          endFrame: 11,
           frameRate: 8,
           loop: true,
         },
@@ -143,7 +143,7 @@ export class Main extends Phaser.Scene {
   }
 
   update(time: number) {
-    if (time - this.playerMoveDebounce < 150) {
+    if (time - this.playerMoveDebounce < 250) {
       return;
     }
 

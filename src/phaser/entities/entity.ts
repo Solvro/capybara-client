@@ -74,7 +74,7 @@ export class Entity extends Phaser.GameObjects.Container {
       targets: this,
       x: targetX,
       y: targetY,
-      duration: 140,
+      duration: 200,
       ease,
       onComplete: () => {
         this.setPosition(targetX, targetY);
