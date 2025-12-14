@@ -1,7 +1,6 @@
 import type { Room } from "colyseus.js";
 import * as Phaser from "phaser";
 
-import { CELL_SIZE } from "../../constants/global";
 import type {
   MessageMapInfo,
   MessageOnAddPlayer,
@@ -10,6 +9,8 @@ import type {
 } from "../../types/messages";
 import type { Player as PlayerType } from "../../types/player";
 import { Player } from "../entities/player";
+import { TILE_SIZE } from "../lib/const";
+import { SpriteAnimator } from "../lib/sprite-animator";
 import { getTileName } from "../lib/utils";
 
 export class Main extends Phaser.Scene {
@@ -23,6 +24,7 @@ export class Main extends Phaser.Scene {
     D: Phaser.Input.Keyboard.Key;
   };
   private playerMoveDebounce = 0;
+  private playerAnimator!: SpriteAnimator;
 
   constructor() {
     super({ key: "Main" });
@@ -41,14 +43,49 @@ export class Main extends Phaser.Scene {
     this.load.image("wall", "images/wall.png");
     this.load.image("crate", "images/crate.png");
     this.load.image("ground", "images/ground.png");
-    this.load.spritesheet("player", "images/test.png", {
+    this.load.spritesheet("player", "images/mimi_walk.png", {
       frameWidth: 64,
       frameHeight: 64,
     });
   }
 
   create() {
-    // Animations
+    // Animations setup
+    this.playerAnimator = new SpriteAnimator("player", {
+      frameWidth: 64,
+      frameHeight: 64,
+      animations: [
+        {
+          name: "walk-up",
+          startFrame: 0,
+          endFrame: 3,
+          frameRate: 8,
+          loop: true,
+        },
+        {
+          name: "walk-down",
+          startFrame: 4,
+          endFrame: 7,
+          frameRate: 8,
+          loop: true,
+        },
+        {
+          name: "walk-left",
+          startFrame: 8,
+          endFrame: 11,
+          frameRate: 8,
+          loop: true,
+        },
+        {
+          name: "walk-right",
+          startFrame: 12,
+          endFrame: 15,
+          frameRate: 8,
+          loop: true,
+        },
+      ],
+    });
+    this.playerAnimator.register(this);
 
     // Input setup
     if (this.input.keyboard !== null) {
@@ -121,6 +158,8 @@ export class Main extends Phaser.Scene {
       playerSpawnInfo.name,
       playerSpawnInfo.sessionId,
       playerSpawnInfo.isLocal,
+      "player",
+      this.playerAnimator,
     );
     this.players.set(playerSpawnInfo.sessionId, player);
     this.add.existing(player);
@@ -132,8 +171,8 @@ export class Main extends Phaser.Scene {
         const tileType = grid[y][x];
 
         this.add.image(
-          x * CELL_SIZE + CELL_SIZE / 2,
-          y * CELL_SIZE + CELL_SIZE / 2,
+          x * TILE_SIZE + TILE_SIZE / 2,
+          y * TILE_SIZE + TILE_SIZE / 2,
           "ground",
         );
 
@@ -142,8 +181,8 @@ export class Main extends Phaser.Scene {
         }
 
         this.add.image(
-          x * CELL_SIZE + CELL_SIZE / 2,
-          y * CELL_SIZE + CELL_SIZE / 2,
+          x * TILE_SIZE + TILE_SIZE / 2,
+          y * TILE_SIZE + TILE_SIZE / 2,
           getTileName(tileType),
         );
       }

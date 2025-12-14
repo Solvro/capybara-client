@@ -1,4 +1,5 @@
 import { CELL_SIZE } from "../../constants/global";
+import type { SpriteAnimator } from "../lib/sprite-animator";
 import { Entity } from "./entity";
 
 export class Player extends Entity {
@@ -14,14 +15,14 @@ export class Player extends Entity {
     name: string,
     sessionId: string,
     local = false,
-    sprite = "player",
+    textureKey = "player",
+    animator: SpriteAnimator | null = null,
   ) {
-    super(scene, x, y, sprite);
+    super(scene, x, y, textureKey, animator);
     this.name = name;
     this.sessionId = sessionId;
     this.local = local;
 
-    // Position relative to container (0,0 is sprite center)
     this.nameText = this.scene.add
       .text(0, -(CELL_SIZE / 2) - 4, name, {
         fontSize: "16px",
