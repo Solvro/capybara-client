@@ -18,6 +18,7 @@
   },
   "prettier": "@solvro/config/prettier",
   "dependencies": {
+    "@headlessui/react": "^2.2.9",
     "@tailwindcss/vite": "^4.1.17",
     "colyseus.js": "^0.16.22",
     "react": "^19.2.0",
