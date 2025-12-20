@@ -8,17 +8,17 @@ export interface MessageMapInfo {
 }
 
 export interface MessagePositionUpdate {
-  playerName: string;
-  position: { x: number; y: number };
+  sessionId: string;
+  direction: "left" | "right" | "up" | "down";
 }
 
 export interface MessageOnAddPlayer {
+  sessionId: string;
   playerName: string;
   position: { x: number; y: number };
   index: number;
-  sessionId: string;
 }
 
 export interface MessageOnRemovePlayer {
-  playerName: string;
+  sessionId: string;
 }

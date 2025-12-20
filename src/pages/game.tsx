@@ -1,121 +1,59 @@
-import type { Room } from "colyseus.js";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-import { Tilemap } from "../components/tilemap";
-import { CELL_SIZE } from "../constants/global";
-import type {
-  MessageMapInfo,
-  MessageOnAddPlayer,
-  MessageOnRemovePlayer,
-  MessagePositionUpdate,
-} from "../types/messages";
-import type { Player } from "../types/player";
+import { Button } from "../components/button";
+import { useRoom } from "../lib/use-room";
+import { PhaserGame } from "../phaser/game";
 
-export function Game({ room }: { room: Room }) {
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [table, setTable] = useState<number[][]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
-  const [sessionId, setSessionId] = useState<string>("");
+export function Game() {
+  const { room, isConnected, joinError } = useRoom();
+  const [showTimeoutError, setShowTimeoutError] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    room.send("getMapInfo");
-    setSessionId(room.sessionId);
-  }, []);
+    if (room !== null && isConnected) {
+      return;
+    }
+    if (joinError) {
+      return;
+    }
 
-  useEffect(() => {
-    room.onMessage("mapInfo", (message: MessageMapInfo) => {
-      setTable(message.grid);
-      setWidth(message.width);
-      setHeight(message.height);
-      setPlayers(message.players);
-      setIsLoading(false);
-    });
-
-    room.onMessage("positionUpdate", (message: MessagePositionUpdate) => {
-      setPlayers((previousPlayers) =>
-        previousPlayers.map((player) =>
-          player.name === message.playerName
-            ? { ...player, x: message.position.x, y: message.position.y }
-            : player,
-        ),
-      );
-    });
-
-    room.onMessage("onAddPlayer", (message: MessageOnAddPlayer) => {
-      setPlayers((previousPlayers: Player[]) => {
-        if (previousPlayers.some((p) => p.name === message.playerName)) {
-          return previousPlayers;
-        }
-
-        return [
-          ...previousPlayers,
-          {
-            name: message.playerName,
-            x: message.position.x,
-            y: message.position.y,
-            index: message.index,
-            sessionId: message.sessionId,
-          },
-        ];
-      });
-    });
-
-    room.onMessage("onRemovePlayer", (message: MessageOnRemovePlayer) => {
-      setPlayers((previousPlayers) =>
-        previousPlayers.filter((player) => player.name !== message.playerName),
-      );
-    });
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const key = event.key.toLowerCase();
-      let x = 0;
-      let y = 0;
-
-      switch (key) {
-        case "w":
-        case "arrowup": {
-          y = -1;
-          break;
-        }
-        case "a":
-        case "arrowleft": {
-          x = -1;
-          break;
-        }
-        case "s":
-        case "arrowdown": {
-          y = 1;
-          break;
-        }
-        case "d":
-        case "arrowright": {
-          x = 1;
-          break;
-        }
-      }
-
-      room.send("move", { x, y });
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
+    const timer = setTimeout(() => {
+      setShowTimeoutError(true);
+    }, 5000);
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      clearTimeout(timer);
     };
-  }, [room]);
+  }, [room, isConnected, joinError]);
 
-  return isLoading ? (
-    <div>Loading...</div>
-  ) : (
-    <Tilemap
-      width={width}
-      height={height}
-      cellSize={CELL_SIZE}
-      initialTable={table}
-      players={players}
-      clientId={sessionId}
-    />
+  if (joinError || showTimeoutError) {
+    return (
+      <div className="flex flex-col items-center gap-4">
+        <div>
+          {joinError
+            ? "Nie udało się połączyć z grą."
+            : "Przekroczono limit czasu połączenia. Serwer może być niedostępny."}
+        </div>
+        <Button
+          disabled={false}
+          onClick={async () => {
+            await navigate("/");
+          }}
+        >
+          Powrót do menu
+        </Button>
+      </div>
+    );
+  }
+
+  if (room === null || !isConnected) {
+    return <div>Łączenie z serwerem gry...</div>;
+  }
+
+  return (
+    <div className="flex h-[560px] w-[800px] items-center justify-center overflow-hidden rounded-2xl bg-amber-200">
+      <PhaserGame room={room} />
+    </div>
   );
 }
