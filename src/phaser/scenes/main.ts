@@ -1,13 +1,16 @@
 import type { Room } from "colyseus.js";
 import * as Phaser from "phaser";
 
+import type { Crate as CrateType } from "../../types/crate";
 import type {
+  MessageCratesUpdate,
   MessageMapInfo,
   MessageOnAddPlayer,
   MessageOnRemovePlayer,
   MessagePositionUpdate,
 } from "../../types/messages";
 import type { Player as PlayerType } from "../../types/player";
+import { Crate } from "../entities/crate";
 import { Player } from "../entities/player";
 import { TILE_SIZE } from "../lib/const";
 import {
@@ -22,6 +25,7 @@ import { getTileName } from "../lib/utils";
 export class Main extends Phaser.Scene {
   private room!: Room;
   private players = new Map<string, Player>();
+  private crates = new Map<string, Crate>();
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd!: {
     W: Phaser.Input.Keyboard.Key;
@@ -89,6 +93,10 @@ export class Main extends Phaser.Scene {
         for (const player of message.players) {
           this.addPlayer(player);
         }
+
+        for (const crate of message.crates) {
+          this.addCrate(crate);
+        }
       });
 
       room.onMessage("onAddPlayer", (message: MessageOnAddPlayer) => {
@@ -114,6 +122,15 @@ export class Main extends Phaser.Scene {
         const player = this.players.get(message.sessionId);
         if (player !== undefined) {
           player.move(message.direction);
+        }
+      });
+
+      room.onMessage("cratesUpdate", (message: MessageCratesUpdate) => {
+        for (const crateUpdate of message.crates) {
+          const crate = this.crates.get(crateUpdate.crateId.toString());
+          if (crate !== undefined) {
+            crate.move(crateUpdate.direction);
+          }
         }
       });
 
@@ -150,6 +167,12 @@ export class Main extends Phaser.Scene {
     );
     this.players.set(playerSpawnInfo.sessionId, player);
     this.add.existing(player);
+  }
+
+  private addCrate(crateInfo: CrateType) {
+    const crate = new Crate(this, crateInfo.x, crateInfo.y, crateInfo.crateId);
+    this.add.existing(crate);
+    this.crates.set(crateInfo.crateId.toString(), crate);
   }
 
   createMap(grid: number[][], width: number, height: number) {

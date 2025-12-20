@@ -1,3 +1,4 @@
+import type { Crate } from "../types/crate";
 import type { Player } from "../types/player";
 
 export interface MessageMapInfo {
@@ -5,6 +6,11 @@ export interface MessageMapInfo {
   width: number;
   height: number;
   players: Player[];
+  crates: Crate[];
+}
+
+export interface MessageCratesUpdate {
+  crates: { crateId: number; direction: "left" | "right" | "up" | "down" }[];
 }
 
 export interface MessagePositionUpdate {
