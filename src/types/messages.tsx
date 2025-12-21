@@ -1,4 +1,6 @@
+import type { Button } from "../types/button";
 import type { Crate } from "../types/crate";
+import type { Door } from "../types/door";
 import type { Player } from "../types/player";
 
 export interface MessageMapInfo {
@@ -7,10 +9,16 @@ export interface MessageMapInfo {
   height: number;
   players: Player[];
   crates: Crate[];
+  doors: Door[];
+  buttons: Button[];
 }
 
 export interface MessageCratesUpdate {
   crates: { crateId: number; direction: "left" | "right" | "up" | "down" }[];
+}
+
+export interface MessageDoorsAndButtonsUpdate {
+  doorsAndButtons: { doorId: string; buttonId: string; open: boolean }[];
 }
 
 export interface MessagePositionUpdate {
