@@ -33,17 +33,29 @@ export function Tilemap({
         gridTemplateRows: `repeat(${height.toString()}, ${cellSize.toString()}px)`,
       }}
     >
-      {initialTable.flat().map((tile, index) => {
-        return (
-          <div key={index} className="bg-gray-500">
-            <img
-              src={TILES[tile]}
-              alt={String(tile)}
-              style={{ width: cellSize, height: cellSize, display: "block" }}
-            />
-          </div>
-        );
-      })}
+      {initialTable &&
+        initialTable.length > 0 &&
+        initialTable.flat().map((tile, index) => {
+          const tileSrc = TILES[tile];
+          if (!tileSrc)
+            return (
+              <div
+                key={index}
+                className="bg-gray-500"
+                style={{ width: cellSize, height: cellSize }}
+              />
+            );
+
+          return (
+            <div key={index} className="bg-gray-500">
+              <img
+                src={tileSrc}
+                alt={String(tile)}
+                style={{ width: cellSize, height: cellSize, display: "block" }}
+              />
+            </div>
+          );
+        })}
 
       <div
         style={{
@@ -59,6 +71,13 @@ export function Tilemap({
           const left = player.x * cellSize;
           const top = player.y * cellSize;
           const frames = PLAYER_SPRITES[player.index];
+
+          if (!frames) {
+            console.warn(
+              `Missing frames for player ${player.sessionId} index ${player.index}`,
+            );
+            return null;
+          }
 
           return (
             <div
