@@ -23,7 +23,6 @@ import {
   getPlayerTextureKey,
 } from "../lib/player-animators";
 import type { SpriteAnimator } from "../lib/sprite-animator";
-import { getTileName } from "../lib/utils";
 import { Button } from "../mechanics/button";
 import { Door } from "../mechanics/door";
 
@@ -57,9 +56,13 @@ export class Main extends Phaser.Scene {
   preload() {
     this.load.setBaseURL(import.meta.env.BASE_URL);
 
-    this.load.image("wall", "images/wall.png");
+    // walls
+    this.load.image("w1", "images/walls/w1.png");
+
+    // floors
+    this.load.image("f1", "images/floors/f1.png");
+
     this.load.image("crate", "images/crate.png");
-    this.load.image("ground", "images/ground.png");
     this.load.image("button-released", "images/buttons/button-green.png");
     this.load.image("button-pressed", "images/buttons/button-red.png");
     this.load.image("door-open", "images/doors/door-green-open.png");
@@ -238,7 +241,8 @@ export class Main extends Phaser.Scene {
     this.doors.set(doorInfo.doorId, door);
   }
 
-  createMap(grid: number[][], width: number, height: number) {
+  createMap(grid: string[][], width: number, height: number) {
+    console.log(grid);
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const tileType = grid[y][x];
@@ -249,14 +253,10 @@ export class Main extends Phaser.Scene {
           "ground",
         );
 
-        if (tileType === 0) {
-          continue;
-        }
-
         this.add.image(
           x * TILE_SIZE + TILE_SIZE / 2,
           y * TILE_SIZE + TILE_SIZE / 2,
-          getTileName(tileType),
+          tileType,
         );
       }
     }
