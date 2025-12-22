@@ -1,9 +1,8 @@
 import type { SpriteAnimator } from "../lib/sprite-animator";
 import { Entity } from "./entity";
-import type { Direction } from "./entity";
 
 export class Crate extends Entity {
-  public readonly crateId: string;
+  public readonly crateId: number;
 
   constructor(
     scene: Phaser.Scene,
@@ -14,14 +13,10 @@ export class Crate extends Entity {
     animator: SpriteAnimator | null = null,
   ) {
     super(scene, x, y, textureKey, animator);
-    this.crateId = crateId.toString();
+    this.crateId = crateId;
   }
 
-  move(direction: Direction, ease = "Circular") {
-    super.move(direction, ease);
-  }
-
-  public get id(): string {
+  public get id(): number {
     return this.crateId;
   }
 }

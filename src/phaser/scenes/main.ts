@@ -30,7 +30,7 @@ import { Door } from "../mechanics/door";
 export class Main extends Phaser.Scene {
   private room!: Room;
   private players = new Map<string, Player>();
-  private crates = new Map<string, Crate>();
+  private crates = new Map<number, Crate>();
   private buttons = new Map<string, Button>();
   private doors = new Map<string, Door>();
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -146,7 +146,7 @@ export class Main extends Phaser.Scene {
 
       room.onMessage("cratesUpdate", (message: MessageCratesUpdate) => {
         for (const crateUpdate of message.crates) {
-          const crate = this.crates.get(crateUpdate.crateId.toString());
+          const crate = this.crates.get(crateUpdate.crateId);
           if (crate !== undefined) {
             crate.move(crateUpdate.direction);
           }
@@ -209,7 +209,7 @@ export class Main extends Phaser.Scene {
   private addCrate(crateInfo: CrateType) {
     const crate = new Crate(this, crateInfo.x, crateInfo.y, crateInfo.crateId);
     this.add.existing(crate);
-    this.crates.set(crateInfo.crateId.toString(), crate);
+    this.crates.set(crateInfo.crateId, crate);
   }
 
   private addButton(buttonInfo: ButtonType) {
