@@ -1,13 +1,19 @@
 import type { Room } from "colyseus.js";
 import * as Phaser from "phaser";
 
+import type { Button as ButtonType } from "../../types/button";
+import type { Crate as CrateType } from "../../types/crate";
+import type { Door as DoorType } from "../../types/door";
 import type {
+  MessageCratesUpdate,
+  MessageDoorsAndButtonsUpdate,
   MessageMapInfo,
   MessageOnAddPlayer,
   MessageOnRemovePlayer,
   MessagePositionUpdate,
 } from "../../types/messages";
 import type { Player as PlayerType } from "../../types/player";
+import { Crate } from "../entities/crate";
 import { Player } from "../entities/player";
 import { TILE_SIZE } from "../lib/const";
 import {
@@ -18,10 +24,15 @@ import {
 } from "../lib/player-animators";
 import type { SpriteAnimator } from "../lib/sprite-animator";
 import { getTileName } from "../lib/utils";
+import { Button } from "../mechanics/button";
+import { Door } from "../mechanics/door";
 
 export class Main extends Phaser.Scene {
   private room!: Room;
   private players = new Map<string, Player>();
+  private crates = new Map<number, Crate>();
+  private buttons = new Map<string, Button>();
+  private doors = new Map<string, Door>();
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd!: {
     W: Phaser.Input.Keyboard.Key;
@@ -49,6 +60,10 @@ export class Main extends Phaser.Scene {
     this.load.image("wall", "images/wall.png");
     this.load.image("crate", "images/crate.png");
     this.load.image("ground", "images/ground.png");
+    this.load.image("button-released", "images/buttons/button-green.png");
+    this.load.image("button-pressed", "images/buttons/button-red.png");
+    this.load.image("door-open", "images/doors/door-green-open.png");
+    this.load.image("door-closed", "images/doors/door-green-closed.png");
 
     for (const [index, textureKey] of PLAYER_TEXTURE_KEYS.entries()) {
       this.load.spritesheet(
@@ -89,6 +104,18 @@ export class Main extends Phaser.Scene {
         for (const player of message.players) {
           this.addPlayer(player);
         }
+
+        for (const crate of message.crates) {
+          this.addCrate(crate);
+        }
+
+        for (const button of message.buttons) {
+          this.addButton(button);
+        }
+
+        for (const door of message.doors) {
+          this.addDoor(door);
+        }
       });
 
       room.onMessage("onAddPlayer", (message: MessageOnAddPlayer) => {
@@ -116,6 +143,33 @@ export class Main extends Phaser.Scene {
           player.move(message.direction);
         }
       });
+
+      room.onMessage("cratesUpdate", (message: MessageCratesUpdate) => {
+        for (const crateUpdate of message.crates) {
+          const crate = this.crates.get(crateUpdate.crateId);
+          if (crate !== undefined) {
+            crate.move(crateUpdate.direction);
+          }
+        }
+      });
+
+      room.onMessage(
+        "doorsAndButtonsUpdate",
+        (message: MessageDoorsAndButtonsUpdate) => {
+          for (const element of message.doorsAndButtons) {
+            const door = this.doors.get(element.doorId);
+            const button = this.buttons.get(element.buttonId);
+
+            if (door !== undefined) {
+              door.isOpen = element.open;
+            }
+
+            if (button !== undefined) {
+              button.isPressed = element.open;
+            }
+          }
+        },
+      );
 
       this.room.send("getMapInfo");
     } catch (error) {
@@ -150,6 +204,38 @@ export class Main extends Phaser.Scene {
     );
     this.players.set(playerSpawnInfo.sessionId, player);
     this.add.existing(player);
+  }
+
+  private addCrate(crateInfo: CrateType) {
+    const crate = new Crate(this, crateInfo.x, crateInfo.y, crateInfo.crateId);
+    this.add.existing(crate);
+    this.crates.set(crateInfo.crateId, crate);
+  }
+
+  private addButton(buttonInfo: ButtonType) {
+    const button = new Button(
+      this,
+      buttonInfo.x,
+      buttonInfo.y,
+      buttonInfo.buttonId,
+      buttonInfo.color,
+      buttonInfo.pressed,
+    );
+    this.add.existing(button);
+    this.buttons.set(buttonInfo.buttonId, button);
+  }
+
+  private addDoor(doorInfo: DoorType) {
+    const door = new Door(
+      this,
+      doorInfo.x,
+      doorInfo.y,
+      doorInfo.doorId,
+      doorInfo.color,
+      doorInfo.open,
+    );
+    this.add.existing(door);
+    this.doors.set(doorInfo.doorId, door);
   }
 
   createMap(grid: number[][], width: number, height: number) {
