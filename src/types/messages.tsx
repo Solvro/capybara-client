@@ -4,7 +4,7 @@ import type { Door } from "../types/door";
 import type { Player } from "../types/player";
 
 export interface MessageMapInfo {
-  grid: number[][];
+  grid: string[][];
   width: number;
   height: number;
   players: Player[];
