@@ -1,7 +1,9 @@
 import type { Button } from "../types/button";
+import type { Capybara } from "../types/capybara";
 import type { Crate } from "../types/crate";
 import type { Door } from "../types/door";
 import type { Player } from "../types/player";
+import type { Vent } from "../types/vent";
 
 export interface MessageMapInfo {
   grid: string[][];
@@ -11,6 +13,8 @@ export interface MessageMapInfo {
   crates: Crate[];
   doors: Door[];
   buttons: Button[];
+  vents: Vent[];
+  capybara: Capybara;
 }
 
 export interface MessageCratesUpdate {

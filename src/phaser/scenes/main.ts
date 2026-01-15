@@ -13,6 +13,7 @@ import type {
   MessagePositionUpdate,
 } from "../../types/messages";
 import type { Player as PlayerType } from "../../types/player";
+import { Capybara } from "../entities/capybara";
 import { Crate } from "../entities/crate";
 import { Player } from "../entities/player";
 import { TILE_SIZE } from "../lib/const";
@@ -25,13 +26,16 @@ import {
 import type { SpriteAnimator } from "../lib/sprite-animator";
 import { Button } from "../mechanics/button";
 import { Door } from "../mechanics/door";
+import { Vent } from "../mechanics/vent";
 
 export class Main extends Phaser.Scene {
   private room!: Room;
+  private capybara: Capybara | null = null;
   private players = new Map<string, Player>();
   private crates = new Map<number, Crate>();
   private buttons = new Map<string, Button>();
   private doors = new Map<string, Door>();
+  private vents = new Map<number, Vent>();
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd!: {
     W: Phaser.Input.Keyboard.Key;
@@ -67,6 +71,13 @@ export class Main extends Phaser.Scene {
     this.load.image("button-pressed", "images/buttons/button-red.png");
     this.load.image("door-open", "images/doors/door-green-open.png");
     this.load.image("door-closed", "images/doors/door-green-closed.png");
+
+    //vents
+    this.load.image("vent-open", "images/vent/vent-open.png");
+    this.load.image("vent-closed", "images/vent/vent-closed.png");
+
+    // capybara
+    this.load.image("capybara", "images/capybara/back_1.png");
 
     for (const [index, textureKey] of PLAYER_TEXTURE_KEYS.entries()) {
       this.load.spritesheet(
@@ -119,6 +130,16 @@ export class Main extends Phaser.Scene {
         for (const door of message.doors) {
           this.addDoor(door);
         }
+
+        if (message.vents) {
+          for (const vent of message.vents) {
+            this.addVent(vent);
+          }
+        }
+
+        if (message.capybara) {
+          this.addCapybara(message.capybara);
+        }
       });
 
       room.onMessage("onAddPlayer", (message: MessageOnAddPlayer) => {
@@ -170,6 +191,18 @@ export class Main extends Phaser.Scene {
             if (button !== undefined) {
               button.isPressed = element.open;
             }
+          }
+        },
+      );
+
+      room.onMessage(
+        "capybaraUpdate",
+        (message: { x: number; y: number; state: string }) => {
+          if (this.capybara) {
+            this.capybara.setPosition(
+              message.x * TILE_SIZE + TILE_SIZE / 2,
+              message.y * TILE_SIZE + TILE_SIZE / 2,
+            );
           }
         },
       );
@@ -239,6 +272,32 @@ export class Main extends Phaser.Scene {
     );
     this.add.existing(door);
     this.doors.set(doorInfo.doorId, door);
+  }
+
+  private addVent(ventInfo: {
+    id: number;
+    x: number;
+    y: number;
+    open: boolean;
+  }) {
+    const vent = new Vent(
+      this,
+      ventInfo.x,
+      ventInfo.y,
+      ventInfo.id,
+      ventInfo.open,
+    );
+    this.add.existing(vent);
+    this.vents.set(ventInfo.id, vent);
+  }
+
+  private addCapybara(capybaraInfo: { x: number; y: number }) {
+    if (this.capybara) {
+      this.capybara.destroy();
+    }
+
+    this.capybara = new Capybara(this, capybaraInfo.x, capybaraInfo.y);
+    this.add.existing(this.capybara);
   }
 
   createMap(grid: string[][], width: number, height: number) {
