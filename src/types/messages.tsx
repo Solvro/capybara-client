@@ -14,8 +14,16 @@ export interface MessageMapInfo {
   crates: Crate[];
   doors: Door[];
   buttons: Button[];
-  vents: Vent[];
-  capybara: Capybara;
+  lasers: Laser[];
+  vents?: Vent[];
+  capybara?: Capybara;
+  cables?: {
+    cableId: string;
+    x: number;
+    y: number;
+    damage?: boolean;
+    timer?: number;
+  }[];
 }
 
 export interface MessageCratesUpdate {
@@ -49,4 +57,9 @@ export interface MessageOnAddPlayer {
 
 export interface MessageOnRemovePlayer {
   sessionId: string;
+}
+
+export interface MessageGenerateLines {
+  sessionId: string;
+  text: string;
 }

@@ -9,6 +9,7 @@ import type {
   MessageCratesUpdate,
   MessageDoorsAndButtonsUpdate,
   MessageLasersUpdate,
+  MessageGenerateLines,
   MessageMapInfo,
   MessageOnAddPlayer,
   MessageOnRemovePlayer,
@@ -29,7 +30,9 @@ import type { SpriteAnimator } from "../lib/sprite-animator";
 import { Button } from "../mechanics/button";
 import { Cable } from "../mechanics/cable";
 import { Door } from "../mechanics/door";
+import { Laser } from "../mechanics/laser";
 import { Vent } from "../mechanics/vent";
+import { SpeechBubble } from "../speech-bubbles/display-speech-bubble";
 
 export class Main extends Phaser.Scene {
   private room!: Room;
@@ -38,7 +41,11 @@ export class Main extends Phaser.Scene {
   private crates = new Map<number, Crate>();
   private buttons = new Map<string, Button>();
   private doors = new Map<string, Door>();
+  private lasers = new Map<string, Laser>();
+  private cables = new Map<string, Cable>();
   private vents = new Map<number, Vent>();
+  private speechBubbles = new Map<string, SpeechBubble>();
+  private bubbleTimer!: Phaser.Time.TimerEvent;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd!: {
     W: Phaser.Input.Keyboard.Key;
@@ -46,6 +53,7 @@ export class Main extends Phaser.Scene {
     S: Phaser.Input.Keyboard.Key;
     D: Phaser.Input.Keyboard.Key;
   };
+  private speakInput!: Phaser.Input.Keyboard.Key;
   private playerMoveDebounce = 0;
   private playerAnimators!: SpriteAnimator[];
 
@@ -69,6 +77,7 @@ export class Main extends Phaser.Scene {
     // floors
     this.load.image("f1", "images/floors/f1.png");
 
+    // game objects
     this.load.image("crate", "images/crate.png");
     this.load.image("button-released", "images/buttons/button-green.png");
     this.load.image("button-pressed", "images/buttons/button-red.png");
@@ -77,13 +86,21 @@ export class Main extends Phaser.Scene {
     this.load.image("laser-gun", "images/lasers/laser-gun.png");
     this.load.image("laser-line", "images/lasers/laser-horizontal-line.png");
 
-    //vents
+    // miscellaneous
+    this.load.atlas(
+      "speech-bubble-sprite-sheet",
+      "images/speech-bubble-sprite-sheet.png",
+      "data/speech-bubble-data.json",
+    );
+
+    // vents
     this.load.image("vent-open", "images/vent/vent-open.png");
     this.load.image("vent-closed", "images/vent/vent-closed.png");
 
     // capybara
     this.load.image("capybara", "images/capybara/back_1.png");
 
+    // player textures
     for (const [index, textureKey] of PLAYER_TEXTURE_KEYS.entries()) {
       this.load.spritesheet(
         textureKey,
@@ -111,6 +128,7 @@ export class Main extends Phaser.Scene {
         S: Phaser.Input.Keyboard.Key;
         D: Phaser.Input.Keyboard.Key;
       };
+      this.speakInput = this.input.keyboard.addKey("L");
     }
 
     // Colyseus message handlers
@@ -134,6 +152,24 @@ export class Main extends Phaser.Scene {
 
         for (const door of message.doors) {
           this.addDoor(door);
+        }
+
+        for (const laser of message.lasers) {
+          this.addLaser(laser);
+        }
+
+        // add cables from server mapInfo
+        for (const cable of message.cables ?? []) {
+          if (this.cables.has(cable.cableId)) continue;
+          const c = new Cable(
+            this,
+            cable.x,
+            cable.y,
+            cable.cableId,
+            !!cable.damage,
+            cable.timer,
+          );
+          this.cables.set(cable.cableId, c);
         }
 
         if (message.vents) {
@@ -215,6 +251,12 @@ export class Main extends Phaser.Scene {
           }
         },
       );
+      room.onMessage("line", (message: MessageGenerateLines) => {
+        const player = this.players.get(message.sessionId);
+        if (player !== undefined) {
+          this.displayBubble(message.text, player, message.sessionId);
+        }
+      });
 
       room.onMessage(
         "capybaraUpdate",
@@ -272,7 +314,32 @@ export class Main extends Phaser.Scene {
     });
   }
 
+  displayBubble(text: string, target: Player, sessionId: string) {
+    if (this.speechBubbles.has(sessionId)) {
+      this.speechBubbles.get(sessionId)?.destroy();
+      this.speechBubbles.delete(sessionId);
+      this.bubbleTimer.remove();
+    }
+    this.speechBubbles.set(
+      sessionId,
+      new SpeechBubble(this, target, text, sessionId),
+    );
+
+    this.bubbleTimer = this.time.delayedCall(
+      text.split(" ").length * 600 + 2000,
+      () => {
+        if (this.speechBubbles.has(sessionId)) {
+          this.speechBubbles.get(sessionId)?.destroy();
+          this.speechBubbles.delete(sessionId);
+        }
+      },
+    );
+  }
+
   update(time: number) {
+    if (Phaser.Input.Keyboard.JustDown(this.speakInput)) {
+      this.room.send("generateLine");
+    }
     if (time - this.playerMoveDebounce < 250) {
       return;
     }
