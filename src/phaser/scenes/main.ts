@@ -262,10 +262,7 @@ export class Main extends Phaser.Scene {
         "capybaraUpdate",
         (message: { x: number; y: number; state: string }) => {
           if (this.capybara) {
-            this.capybara.setPosition(
-              message.x * TILE_SIZE + TILE_SIZE / 2,
-              message.y * TILE_SIZE + TILE_SIZE / 2,
-            );
+            this.capybara.moveToGrid(message.x, message.y);
           }
         },
       );
