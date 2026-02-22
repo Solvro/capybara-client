@@ -8,8 +8,8 @@ import type { Laser as LaserType } from "../../types/laser";
 import type {
   MessageCratesUpdate,
   MessageDoorsAndButtonsUpdate,
-  MessageLasersUpdate,
   MessageGenerateLines,
+  MessageLasersUpdate,
   MessageMapInfo,
   MessageOnAddPlayer,
   MessageOnRemovePlayer,
