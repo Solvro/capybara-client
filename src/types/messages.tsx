@@ -2,6 +2,7 @@ import type { Button } from "../types/button";
 import type { Capybara } from "../types/capybara";
 import type { Crate } from "../types/crate";
 import type { Door } from "../types/door";
+import type { Laser } from "../types/laser";
 import type { Player } from "../types/player";
 import type { Vent } from "../types/vent";
 
@@ -19,6 +20,15 @@ export interface MessageMapInfo {
 
 export interface MessageCratesUpdate {
   crates: { crateId: number; direction: "left" | "right" | "up" | "down" }[];
+}
+
+export interface MessageLasersUpdate {
+  lasers: {
+    laserId: string;
+    active: boolean;
+    cratesDestroyed: Crate[];
+    range: number;
+  }[];
 }
 
 export interface MessageDoorsAndButtonsUpdate {

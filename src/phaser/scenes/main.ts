@@ -4,9 +4,11 @@ import * as Phaser from "phaser";
 import type { Button as ButtonType } from "../../types/button";
 import type { Crate as CrateType } from "../../types/crate";
 import type { Door as DoorType } from "../../types/door";
+import type { Laser as LaserType } from "../../types/laser";
 import type {
   MessageCratesUpdate,
   MessageDoorsAndButtonsUpdate,
+  MessageLasersUpdate,
   MessageMapInfo,
   MessageOnAddPlayer,
   MessageOnRemovePlayer,
@@ -25,6 +27,7 @@ import {
 } from "../lib/player-animators";
 import type { SpriteAnimator } from "../lib/sprite-animator";
 import { Button } from "../mechanics/button";
+import { Cable } from "../mechanics/cable";
 import { Door } from "../mechanics/door";
 import { Vent } from "../mechanics/vent";
 
@@ -71,6 +74,8 @@ export class Main extends Phaser.Scene {
     this.load.image("button-pressed", "images/buttons/button-red.png");
     this.load.image("door-open", "images/doors/door-green-open.png");
     this.load.image("door-closed", "images/doors/door-green-closed.png");
+    this.load.image("laser-gun", "images/lasers/laser-gun.png");
+    this.load.image("laser-line", "images/lasers/laser-horizontal-line.png");
 
     //vents
     this.load.image("vent-open", "images/vent/vent-open.png");
@@ -177,6 +182,22 @@ export class Main extends Phaser.Scene {
         }
       });
 
+      room.onMessage("lasersUpdated", (message: MessageLasersUpdate) => {
+        for (const laserUpdate of message.lasers) {
+          const laser = this.lasers.get(laserUpdate.laserId);
+          if (laser !== undefined) {
+            for (const crate of laserUpdate.cratesDestroyed) {
+              const crateSprite = this.crates.get(crate.crateId);
+              if (crateSprite !== undefined) {
+                crateSprite.destroy();
+                this.crates.delete(crate.crateId);
+              }
+            }
+            laser.launch(laserUpdate.active, laserUpdate.range);
+          }
+        }
+      });
+
       room.onMessage(
         "doorsAndButtonsUpdate",
         (message: MessageDoorsAndButtonsUpdate) => {
@@ -211,6 +232,44 @@ export class Main extends Phaser.Scene {
     } catch (error) {
       console.error("Error setting up Colyseus message handlers:", error);
     }
+
+    // forward Colyseus messages to this scene so mechaniki (np. kable) obsłużą je tak jak inne feature'y [DO ZMIANY PO UJEDNOLICENIU REPOZYTORIUM]
+    const room = this.game.registry.get("room");
+    if (room) {
+      const onMapInfo = (mapInfo: any) => this.events.emit("mapInfo", mapInfo);
+      const onCables = (payload: any) => {
+        const list = payload?.cables ?? payload?.toggled ?? payload ?? [];
+        this.events.emit("cables:update", list);
+      };
+      const onPlayerDamaged = (p: any) => this.events.emit("player:damaged", p);
+
+      room.onMessage("mapInfo", onMapInfo);
+      room.onMessage("cablesUpdate", onCables);
+      room.onMessage("playerDamaged", onPlayerDamaged);
+
+      this.sys.events.once("shutdown", () => {
+        try {
+          room.offMessage("mapInfo", onMapInfo);
+          room.offMessage("cablesUpdate", onCables);
+          room.offMessage("playerDamaged", onPlayerDamaged);
+        } catch (e) {}
+      });
+    }
+
+    // react to cable toggles forwarded to this scene
+    this.events.on("cables:update", (list: any[]) => {
+      for (const t of list) {
+        const id = t.cableId ?? t.id;
+        if (!id) continue;
+        const cable = this.cables.get(id);
+        if (cable) {
+          cable.applyState(
+            !!t.damage,
+            typeof t.timer === "number" ? t.timer : cable.timer,
+          );
+        }
+      }
+    });
   }
 
   update(time: number) {
@@ -246,6 +305,22 @@ export class Main extends Phaser.Scene {
     const crate = new Crate(this, crateInfo.x, crateInfo.y, crateInfo.crateId);
     this.add.existing(crate);
     this.crates.set(crateInfo.crateId, crate);
+  }
+
+  private addLaser(laserInfo: LaserType) {
+    const laser = new Laser(
+      this,
+      laserInfo.x,
+      laserInfo.y,
+      laserInfo.laserId,
+      laserInfo.direction,
+      laserInfo.range,
+      laserInfo.color,
+    );
+    // console.log("Adding laser:", laserInfo);
+    this.add.existing(laser);
+    this.lasers.set(laserInfo.laserId, laser);
+    laser.launch(false, laserInfo.range);
   }
 
   private addButton(buttonInfo: ButtonType) {
@@ -301,7 +376,7 @@ export class Main extends Phaser.Scene {
   }
 
   createMap(grid: string[][], width: number, height: number) {
-    console.log(grid);
+    // console.log(grid);
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const tileType = grid[y][x];
