@@ -270,6 +270,13 @@ export class Main extends Phaser.Scene {
         },
       );
 
+      room.onMessage("line", (message: MessageGenerateLines) => {
+        const player = this.players.get(message.sessionId);
+        if (player !== undefined) {
+          this.displayBubble(message.text, player, message.sessionId);
+        }
+      });
+
       this.room.send("getMapInfo");
     } catch (error) {
       console.error("Error setting up Colyseus message handlers:", error);
